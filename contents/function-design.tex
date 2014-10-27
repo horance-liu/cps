@@ -1,0 +1,399 @@
+\begin{savequote}[45mm]
+\ascii{Premature optimization is the root of all evil.}
+\qauthor{\ascii{– Donald Knuth}}
+
+\ascii{On the other hand, we cannot ignore efficiency.}
+\qauthor{\ascii{– Jon Bentley}}
+\end{savequote}
+
+\chapter{Functions and Operators}
+\label{ch:functions-operators}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Function}
+
+\begin{content}
+
+\begin{regulation}
+避免过长，嵌套过深的函数实现
+\end{regulation}
+
+我讨厌长函数，犹如讨厌重复一样。长函数往往伴随着复杂的逻辑判断，过深嵌套逻辑。理解它们的业务规则是一件痛苦的事情。
+
+\begin{regulation}
+只做一件事，并做好这件事
+\end{regulation}
+
+这是\ascii{SRP}在函数实现中的一个具体体现。一个函数只应该承担一个唯一的职责，如果函数名伴随\ascii{and}，或将查询和命令混合往往是违背此原则的信号。
+
+一般地，如果函数只是做了该函数名称下统一抽象层次上的几个小步骤，则函数还是只做了一件事情。函数就是将一个大一点的概念拆分成级别稍微低一点、并在同一个抽象层次的一系列步骤的过程。
+
+\begin{regulation}
+函数中的每一个语句都在一个相同的抽象层次上
+\end{regulation}
+
+如果函数中混杂不同抽象层次的代码，往往让人感到迷惑，理解代码的逻辑，需要读者陷入到细节之中而不能自拨。
+
+\ascii{Kent Beck}建议使用\ascii{Compose Method}分解长函数；\ascii{Martin Flower}也建议使用\ascii{Extract Method}进行函数提取。\ascii{Extract Method}最重要的就是识别出代码中的抽象层次，并梳理出主干，按照自顶向下的规则实现函数的。
+
+函数提取常常要遵守如下3个基本原则：
+\begin{enum}
+  \eitem{\ascii{在同一个抽象层次}}
+  \eitem{\ascii{给一个直观的，意图明确的好名字}}
+  \eitem{\ascii{实现对称性}}
+\end{enum}
+
+正如\ascii{Bob}大叔提到的那样: 程序就像是一系列的以\ascii{TO}起头的段落，每一段落都描述了当前抽象层次的逻辑，并引用下一抽象层次的，以TO开头的段落。
+
+下例虽然以\ascii{Java}为例，但重点没有偏离，规则同样适用于\ascii{C/C++}。
+
+\begin{leftbar}
+\begin{java}
+public class List<E> {
+   public void add(E element) {
+      if (!readOnly) {
+         int newSize = size + 1;
+         if (newSize > elements.length) {
+            Object[] newElements =
+               new Object[elements.length + 10];
+            for (int i = 0; i < size; i++)
+               newElements[i] = elements[i];
+            elements = newElements;
+         }
+         elements[size++] = element;
+      }
+   }
+}
+\end{java}
+\end{leftbar}
+
+提取函数之后，使算法的骨骼显而易见。
+
+\begin{leftbar}
+\begin{java}
+public class List<E> {
+   public void add(E element) {
+      if (readOnly)
+         return;
+      
+      if (atCapacity())
+         grow();
+      
+      addElement(element);
+   }
+}
+\end{java}
+\end{leftbar}
+
+提取函数往往受到性能偏执狂的抨击，他们认为过多的函数提取将成为性能的主要瓶颈。\ascii{2-8}原则将彻底击垮所有不靠谱的言论，与其纠结于函数调用的开销，不如花费更多的时间去优化和改善那些至关重要的算法和关键代码。
+
+\begin{regulation}
+检查参数的有效性
+\end{regulation}
+
+绝大部分的函数对于传递的参数都有限制，这时需要在函数执行之前完成参数的合法性校验。\ascii{C/C++}语言不能天然地支持“按契约设计”的语言，但使用前置的参数检查将大大改善程序的健壮性。
+
+\begin{regulation}
+将局部变量的作用域最小化
+\end{regulation}
+
+这条规则可能对\ascii{C}程序员更有指导意义，但改变这样的陋习可能需要一段时间。例如局部于\ascii{for}的循环变量，当它的使命完成之后，强制让编译器将其销毁，避免这个变量再次被使用的风险。
+
+\begin{leftbar}
+\begin{c++}
+map<string, string> addressBook; 
+for ( auto entry : addressBook ) 
+{ 
+    cout << entry.first << "," << entry.second << endl;
+}
+\end{c++}
+\end{leftbar}
+
+同样的规则也使用与其他常见的情况，例如\ascii{if}语句，简化空指针的判断，简洁有效。
+
+\begin{leftbar}
+\begin{c++}
+if (PaymentInfo* info = database.ReadPaymentInfo()) 
+{
+    cout << "User paid: " << info->amount() << endl;
+}
+\end{c++}
+\end{leftbar}
+
+但也有人对于\ascii{if}语句这样的用法持反对态度，因为他们认为这样做更容易出错。
+
+\begin{regulation}
+分离查询与指令
+\end{regulation}
+
+函数应该只拥有清晰明确的、唯一的职责。如果函数既修改对象状态，又返回对象的状态信息，则常常会导致混乱。产生副作用的指令操作，都是系统状态的一种变更，将产生时序上的耦合和顺序的依赖。尤其当查询和指令混合在一起的时候，查询函数的无副作用的优点将不复存在。
+
+\begin{regulation}
+使用\ascii{Null Object}替代空指针
+\end{regulation}
+
+校验空指针是一件及其繁琐的事情，优秀的程序员通过各种技巧绕开这些冗余的操作。例如参数通过引用传递，另外一种常见的手段就是\ascii{Null Object}\footnote{参考\ascii{Martin Flower}的著作《重构，改善既有代码的设计》}。
+
+\begin{regulation}
+对于参数类型，返回值类型，优先使用接口类型
+\end{regulation}
+
+这是基于接口编程的良好习惯，是优秀设计的体现。
+
+\begin{regulation}
+对于\ascii{bool}参数，优先使用两个元素的枚举类型
+\end{regulation}
+
+从直观上，
+
+\begin{leftbar}
+\begin{c++}
+Thermometer::newInstance(CELSIUS);
+\end{c++}
+\end{leftbar}
+
+要比
+
+\begin{leftbar}
+\begin{c++}
+Thermometer::newInstance(true);
+\end{c++}
+\end{leftbar}
+
+容易理解得多，但牺牲了一点点代码复用性。对于这个问题，可以通过内部的\ascii{private}函数来解决这个问题。也就是说，带\ascii{bool}参数的函数依然存在，只不过被\ascii{private}，以便实现对枚举参数的函数的代码复用。
+
+\begin{regulation}
+永远不要导出具有相同参数数目的的重载方法
+\end{regulation}
+
+重载是一种编译时的多态。只要函数具有相同名字，但参数数目，类型不同，即为重载。但滥用往往会误导使用\ascii{API}的程序员，尤其在具有相同参数数目的重载方法时，程序员需要清晰地知道所有类型的隐式转换规则，即其重载匹配规则，这无疑是一种没必要的负担。
+
+\begin{leftbar}
+\begin{c++}
+struct ObjectOutputStream
+{
+    void write(bool);
+    void write(char);
+    void write(short);
+    void write(int);
+    void write(long);
+    void write(float);
+    void write(double);
+};
+\end{c++}
+\end{leftbar}
+
+面对疑难的时候，抛弃重载往往能得到更不容易犯错的解决方案。
+
+\begin{leftbar}
+\begin{c++}
+struct ObjectOutputStream
+{
+    void writeBool(bool);
+    void writeChar(char);
+    void writeShort(short);
+    void writeInt(int);
+    void writeLong(long);
+    void writeFloat(float);
+    void writeDouble(double);
+};
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+使用\ascii{explicit}显式地禁止类型的隐式转换
+\end{regulation}
+
+隐式类型转换往往无声无息地被执行，通过\ascii{explicit}便能通过编译器清晰地捕获的所有隐式转换的事件，以便供程序员进一步决策。
+
+\begin{regulation}
+避免实现火车失事的代码
+\end{regulation}
+
+\begin{leftbar}
+\begin{java}
+String outputDir = ctxt.getOptions().getScratchDir().getAbsolutePath();
+\end{java}
+\end{leftbar}
+
+使用火车失事形容这段代码，非常贴切。如果其调用链如果某一环节出现了问题，则整个调用将出现失败。这类串联的调用违反了\ascii{Demeter}法则，\ascii{ctxt}对象包含了多个选项，每个选项中存在一个临时目录，每个目录都有一个绝对路径，所有的知识都毫无保留地暴露给了用户。
+
+仔细分析一下代码，再看看其中一个模块是如何使用这个\ascii{outputDir}的。
+
+\begin{leftbar}
+\begin{java}
+String outFile = outputDir + File.SEPERATOR + className + ".class";
+BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outFile));
+\end{java}
+\end{leftbar}
+
+所有的一切都是为了创建指定名称的临时文件，理想的实现应该将所有本应该隐藏的知识归并到\ascii{ctxt}中实现。
+
+\begin{leftbar}
+\begin{c++}
+BufferedOutputStream bos = ctxt.createScratchFileStream(className);
+\end{c++}
+\end{leftbar}
+
+\end{content}
+
+\section{Operators}
+
+\begin{content}
+
+\begin{regulation}
+重载运算符必须保持原有操作符的语义，
+\end{regulation}
+
+如果重载运算符改变了程序员对固有知识的理解，将加大放错的几率。
+
+\begin{regulation}
+谨慎地使用转换运算符
+\end{regulation}
+
+转换运算符是一种危险的操作，它常常无声无息地让人犯错。谨慎使用，并非绝不使用，在合适的情况下，使用装换运算符，能够得到更为简洁的代码。
+
+\begin{regulation}
+优先使用前置\ascii{++operator}
+\end{regulation}
+
+这是提升效率的一种举措，提倡使用前置的操作运算符。尤其在操作重载了\ascii{++operator}的类对象，例如迭代器，更应该使用\ascii{++operator}。
+
+\begin{regulation}
+使用\ascii{operator*, operator->}实现类的包装或修饰
+\end{regulation}
+
+\ascii{operator*, operator->}操作符是提供包装和修饰功能的特殊工具，是一种典型的间接技术\footnote{软件工程有一条黄金定律：任何问题都可以通过增加一个间接层来解决。}。它的最大优势是为用户提供良好的、人性化操作接口。
+
+以扩展了的\ascii{placement new}为例，讲解\ascii{operator*, operator->}的使用。
+
+\begin{leftbar}
+\begin{c++}
+#include <string.h>
+#include <new>
+
+template <typename T>
+struct Placement
+{
+    void* alloc()
+    {
+        memset(u.buff, 0, sizeof(u));
+        return (void*)u.buff;
+    }
+
+    void dealloc()
+    {
+        getObject()->~T();
+    }    
+
+    T* operator->() const
+    {
+        return (T*)u.buff;
+    }
+
+    T& operator*() const
+    {
+        return *(T*)u.buff;
+    }
+
+    T* getObject() const
+    {
+        return (T*)u.buff;
+    }
+
+private:
+    union
+    {
+        char   c;
+        short  s;
+        int    i;
+        long   l;
+        float  f;
+        double d;
+        void*  p;
+
+        char buff[sizeof(T)];
+    }u;
+};
+\end{c++}
+\end{leftbar}
+
+\ascii{Placement}本质上就是一块内存，它是在原生内存上提供了一层直观的，人性化的操作接口。
+
+
+众所周知，当定义一个对象的数组时，该对象的类必须提供一个默认构造函数。如下例，\ascii{ReleasingRbList}如果定义了一个\ascii{ReleasingRb}，则此时因为\ascii{ReleasingRb}没有提供对应的默认构造函数而出现编译错误。
+
+\ascii{Placement}能否发挥其优势，是解决此类问题的灵丹妙药；在需要创建对象的时候，再\ascii{placement new}出来，这也是一种典型的延迟初始化技术。
+
+\begin{leftbar}
+\begin{c++}
+#include "base/Status.h"
+#include "erab/ErabId.h"
+#include "rb/RbId.h"
+#include "base/Placement.h"
+
+struct ReleasingRb
+{
+    ReleasingRb(const ErabId& erabId, const RbId& rbId);
+
+    const ErabId& getErabId() const;
+    const RbId& getRbId() const;
+
+private:
+    ErabId erabId;
+    RbId   rbId;
+};
+
+struct ReleasingRbList
+{
+    ReleasingRbList();
+
+    bool contains(const ErabId& erabId) const;
+    Status addReleasingRb(const ErabId& erabId, const RbId& rbId);
+
+private:
+    enum { MAX_UE_ERAB_NUM = 8 };
+
+    BYTE n;
+    Placement<ReleasingRb> relErabs[MAX_UE_ERAB_NUM];
+};
+\end{c++}
+\end{leftbar}
+
+\begin{leftbar}
+\begin{c++}
+#include "erab/ReleasingRbList.h"
+#include "base/Assertions.h"
+
+ReleasingRbList::ReleasingRbList() : n(0)
+{	
+}
+
+Status ReleasingRbList::addReleasingRb(const ErabId& erabId, const RbId& rbId)
+{
+    ASSERT_FALSE(contains(erabId));
+    ASSERT_TURE(n < MAX_UE_ERAB_NUM);
+
+    new (relErabs[n++].alloc()) ReleasingRb(erabId, rbId);
+
+    return DCM_SUCCESS;
+}
+
+bool ReleasingRbList::contains(const ErabId& erabId) const
+{
+    for (BYTE i = 0; i < n; ++i)
+    {
+        if(relErabs[i]->getErabId() == erabId)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+\end{c++}
+\end{leftbar}
+
+\ascii{relErabs[i]->getErabId()}调用时，实际上调用了\ascii{Placement::operator->}，但从实现上看，给用户调用提供了很大的灵活性和方便性，这还是得倚仗了\ascii{operator->}带来的间接性的功劳。
+
+\end{content}

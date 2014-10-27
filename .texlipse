@@ -1,0 +1,14 @@
+#TeXlipse project settings
+#Thu Jul 18 18:50:46 CST 2013
+markTmpDer=true
+builderNum=7
+outputDir=output/
+makeIndSty=
+bibrefDir=
+outputFormat=pdf
+tempDir=tmp
+mainTexFile=cpp-programming-style.tex
+outputFile=cpp-programming-style.pdf
+langSpell=zh
+markDer=true
+srcDir=

@@ -1,0 +1,213 @@
+\begin{savequote}[45mm]
+\ascii{Make it work, make it right, make it fast.}
+\qauthor{\ascii{- Kent Beck}}
+\end{savequote}
+
+\chapter{General Programming}
+\label{ch:general-programming}
+
+\section{Code Style}
+
+\begin{content}
+
+\begin{regulation}
+团队应该统一代码风格
+\end{regulation}
+
+团队代码拥有一种最权威的风格，犹如一个人写的一样。否则代码因缺乏统一整齐的花括号，或者存在长度不一致的\ascii{TAB}，使得代码变得层次不齐。
+
+存在多种经典的代码风格，它们都拥有各自的特点和优势，团队应该统一地选择其中一种即可。
+\begin{enum}
+  \eitem{\ascii{K\&R}}
+  \eitem{\ascii{BSD/Allman}}
+  \eitem{\ascii{GNU}}
+  \eitem{\ascii{Whitesmiths}}
+\end{enum}
+
+统一代码风格，并非难事，团队发布统一的\ascii{IDE}代码模板，及其定制一个方便的格式化快捷键即可解决所有问题。
+
+\begin{regulation}
+拒绝实现巨文件
+\end{regulation}
+
+巨大的头文件最大的一个问题就是产生了难以忍受的编译时依赖，这种往往是由\ascii{C}遗留的一些陋习所致，拒绝它的诱惑吧。
+
+巨大的实现文件虽然没有编译时依赖的问题，但它给人带来巨大的恐惧感；此外在一个\ascii{100000}行的源文件中进行重构简直就是一件痴人说梦的事情；在多人同时修改此文件的概率大大加大，使用配置管理工具时冲突不断。
+
+多少行是最适合的呢，没有标准，犹如一个函数应该有多少行一样的问题；只有一个高内聚、低耦合的原则可参考；但事实证明，往往满足了这个原则的时候，文件就变得短小精干了。
+
+\end{content}
+
+
+\section{Clean Comment}
+
+\begin{content}
+
+\begin{regulation}
+消除所有没有必要的注释
+\end{regulation}
+
+没有携带任何信息量的注释都是没有必要的。
+
+如下列的注释，维护它简直就是一种巨大的包袱，有时候它的存在就像一个笑话。它就像挑战读者的智商，如果你不知道它是一个构造函数，让我告诉你吧。
+
+\begin{leftbar}
+\begin{c++}
+/**
+ * Constructor
+ */
+InvokedAtMost(const unsigned int times);
+
+/**
+ * @param Invocation
+ * @return bool
+ */
+bool matches(const Invocation& inv) const;
+\end{c++}
+\end{leftbar}
+
+还有一种就是误导性的注释，注释和代码已经失去匹配，意图甚至是相反的。这样的注释如果继续存在，贻害的肯定不止一个人。
+
+还有一种注释会经常遇到：日志型注释。修正一个\ascii{bug}时，都需要在函数头的注释表中增加一条记录.放弃这种好习惯，将这份精细的工作交给源代码控制系统吧。
+
+还有一种注释，当我遇到时，就会产生一种莫名的冲动将其消灭。在花括号后面的\ascii{//end if, //end while, // end try}，它们的出现就是提取函数的最佳时机。
+
+代码签署问题，往往是因为版权等问题被强制要求。至于我从来不会将自己的名字留在代码中，也许只有代码巨匠才敢做这件事情。事实上，留了名字的代码往往只会给后来人唯一的一个提示就是：这个代码只有我一个人能维护，别抢我的饭碗。
+
+已经被注释掉的代码，应该立即删除。因为从源代码控制系统中追回这份被删除的代码是很容易的。
+
+\begin{regulation}
+在需要注释的时候，一定要加注释
+\end{regulation}
+
+法律信息注释，这是因为公司版权的保护不得不让程序员增加这些注释。这类问题幸好可以通过代码模板轻松解决，不会成为造成程序员的任何负担\footnote{发布开源代码时，也常常需要增加必要的\ascii{GNU, BSD等}公共许可证}；
+
+对代码无法明确的意图也需要增加注释，例如对正则表达式的注释，位移操作的注释等。
+
+\begin{leftbar}
+\begin{c++}
+// kk::mm::ss, MM dd, yyyy
+std::string timePattern = "\\d{2}:\\d{2}:\\d{2}, \\d{2} \\d{2}, \\d{4}";
+\end{c++}
+\end{leftbar}
+
+当在代码中存在反直觉，和可能存在陷阱的代码也需要增加注释。这类情况，首先应该考虑能否消除这样的陷阱，但有时候是很难做到，注释可能是最后的一根救命稻草了。
+
+\end{content}
+
+\section{General Rules}
+
+\begin{content}
+
+\begin{regulation}
+绝不使用全局变量
+\end{regulation}
+
+全局变量犹如\ascii{goto}一样臭名昭著，但程序员常常被全局变量所诱惑，因为它的确容易被实现。但是它带来了破坏性远远大于其益处。作为一个团队，应该拥有统一的编码规程，禁止使用全局变量应该成为团队中大家必须遵守一条法文。
+
+太苛刻了，但从实践情况上了，这样的要求并没有想象中那么苛刻，总会找到一种比全局变量更好的解决方案。
+
+在最坏的情况下，当需要给系统唯一存在的概念进行描述，也不应该定义全局变量，而应该使用单态进行包装。
+
+\begin{regulation}
+只有在简单逻辑的情况下鼓励使用\ascii{?:}条件表达式。
+\end{regulation}
+
+\begin{leftbar}
+\begin{c++}
+if (hour >= 12) 
+{
+    time_str += "pm";
+} 
+else 
+{
+    time_str += "am";
+}
+\end{c++}
+\end{leftbar}
+
+这样的语句鼓励重构为：
+\begin{leftbar}
+\begin{c++}
+time_str += (hour >= 12) ? "pm" : "am";
+\end{c++}
+\end{leftbar}
+
+虽然道理简单，但很多程序员往往因为习惯了\ascii{if-else}而忽视了这种简洁的表达式。犹如常常看到代码中会有如下的语句一样，让人哭笑不得。
+
+\begin{leftbar}
+\begin{c++}
+bool exist = erabs.contains(ErabId(2)) ? true : false;
+\end{c++}
+\end{leftbar}
+
+但是，当表达式变得非常复杂时，\ascii{if-else}可能是更好的选择了。
+
+\begin{leftbar}
+\begin{c++}
+return exponent >= 0 ? mantissa * (1 << exponent) : mantissa / (1 << -exponent);
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+擅用卫语句从函数中提前返回，或从嵌套的语句中提前返回。
+\end{regulation}
+
+\begin{leftbar}
+\begin{c++}
+bool contains(const std::string* str, const string* substr) 
+{
+    if (str == NULL || substr == NULL)
+        return false;
+    
+    if (substr->empty()) 
+        return true;
+
+    ...
+}
+\end{c++}
+\end{leftbar}
+
+可以想象，如果不进行提前返回，上述处理的表达效果将大打折扣。
+
+虽然在代码阅读过程中\ascii{continue}常常打断了人的思维。但在函数短小，意图明确的情况下，\ascii{continue}相反能给人一种“跳过此项”的意图，代码嵌套逻辑得到了改善。
+
+\ascii{Dijkstra}提出了结构化编程规则，我们赞同结构编程的目标和规范。但对于小函数，这条规则指导意义不是很大。
+
+\begin{regulation}
+擅用解释型变量，或提供意图明确的、内联的查询函数。
+\end{regulation}
+
+解释型变量的重构手法因为内联的查询函数的威力所大大折扣，往往没有后者运用广泛。
+
+\begin{leftbar}
+\begin{c++}
+if (line.split(":")[0].trim() == "root")
+\end{c++}
+\end{leftbar}
+
+\begin{leftbar}
+\begin{c++}
+String userName = line.split(":")[0].trim();
+if (userName == "root")
+{
+    ...
+}
+\end{c++}
+\end{leftbar}
+
+\ascii{split}函数将字符串按照指定的正则表达式进行拆分，并提供一个良好的意图变量，将大大改善逻辑的清晰度。
+
+\begin{regulation}
+如果需要精确答案，请避免使用\ascii{float}和\ascii{double}
+\end{regulation}
+
+由于二进制浮点运算只是一种快速的近似的数值运算计算，所以在精度上可能与想象的有一定误差。常见的做法是通过扩大倍数，将浮点数运算转换为整数运算；或直接利用支持高精度浮点运算的类库。
+
+\begin{regulation}
+复用类库，复用既有代码。
+\end{regulation}
+
+复用类库，复用既有代码，而不是重新造一个轮子，这给程序员提出了一个很大的挑战。就像学习\ascii{ruby}一样，入门简单，但真正的精通，还是得对库的熟悉运用程度。
+
+\end{content}

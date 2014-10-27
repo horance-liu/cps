@@ -1,0 +1,64 @@
+\begin{savequote}[45mm]
+\ascii{There are two ways of constructing a software design. One way is to make it so simple that there are obviously no deficiencies. And the other way is to make it so complicated that there are no obvious deficiencies.}
+\qauthor{\ascii{- C.A.R. Hoare}}
+\end{savequote}
+
+\chapter{Clean Test}
+\label{ch:clean-test}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{TDD}
+
+\begin{content}
+
+\begin{regulation}
+\ascii{TDD}遵循三定律
+\end{regulation}
+
+\begin{enum}
+  \eitem{在编写不能通过的测试前，不可编写生产代码}
+  \eitem{只可编写刚好无法通过的测试，不能编译也算不通过}
+  \eitem{只可编写刚好足以通过当前失败测试的生产代码}
+\end{enum}
+
+关于测试驱动请参考\ascii{Kent Beck的著作《Test-Driven Development, by example》}。
+
+\end{content}
+
+\section{Clean Test}
+
+\begin{content}
+
+\begin{regulation}
+测试名称遵循\ascii{Given-When-Then}
+\end{regulation}
+
+这是流行的\ascii{BDD，行为驱动测试}命名规范，当阅读测试用例时，或当测试失败时，这样的命名风格非常有利于行为的描述。
+
+摒弃原始的\ascii{Testxxx}的风格吧，因为它没有固定的规范，也不能清晰表达\ascii{TDD}的意图，更像在做一个测试。
+
+\begin{regulation}
+每一个测试一个概念
+\end{regulation}
+
+这是\ascii{SRP}在测试用例中的体现，当测试用例失败的时候，能够清晰地知道测试失败的原因。
+
+一个概念往往只会有一个断言来描述，出现数目众多的断言往往违背了此规则，应避而远之。
+
+\begin{regulation}
+测试应该像文档一样清晰
+\end{regulation}
+
+测试用例是理解系统行为的最佳途径，也是最实时，最权威的文档。
+
+\begin{regulation}
+测试更应该是像一个例子
+\end{regulation}
+
+测试不仅仅为了测试而测试，更重要的是对系统行为的描述。
+
+\begin{regulation}
+设计面向特定领域的测试语言是值得的
+\end{regulation}
+
+\end{content}
