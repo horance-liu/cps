@@ -1,0 +1,191 @@
+\begin{savequote}[45mm]
+\ascii{I'm not a great programmer; I'm just a good programmer with great habits.}
+\qauthor{\ascii{- Kent Beck}}
+\end{savequote}
+
+\chapter{简化逻辑}
+\label{ch:simple-logic}
+
+\section{简化控制逻辑}
+
+\begin{content}
+
+\begin{regulation}
+\ascii{YODA Notation}已经是过去时
+\end{regulation}
+
+\begin{leftbar}
+\begin{c++}
+if (length <= MAX_STREAM_LEN)
+if (MAX_STREAM_LEN >= length)
+\end{c++}
+\end{leftbar}
+
+前者更具有表达力，再看一个例子，
+
+\begin{leftbar}
+\begin{c++}
+while (bytesReceived < bytesExpected)
+while (bytesExpected > bytesReceived)
+\end{c++}
+\end{leftbar}
+
+同样地，前者更具有表达力。因为前者更加符合人类的思维，或这说更符合英语的表达习惯，\ascii{"if you are at least 18 years old."}明显比\ascii{"if 18 years is less than or equal to your age"}更加符合英语表达习惯。是的，英语更加习惯将稳定的一侧放在右边\ascii{(right-hand side)}。
+
+但是，在\clang{}或者\cpp{}语言中，如果\ascii{==}被误用为\ascii{=}，则可能发生副作用的危险，而且编译时并不能做到安全的检查，从而产生了严重的\ascii{bug}。
+
+幸运的是，现代编译器对此类误用通常报告警告信息；此外如果保持\ascii{TDD}开发节奏，小步前进，此类低级错误很难逃出我们的法眼。
+
+\begin{regulation}
+在简单逻辑的情况下，鼓励使用\ascii{?:}三元表达式；但是，当表达式变得非常复杂时，\ascii{if-else}可能是更好的选择
+\end{regulation}
+
+反例：
+\begin{leftbar}
+\begin{c++}
+if (hour >= 12) 
+{
+    time += "pm";
+} 
+else 
+{
+    time += "am";
+}
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+time_str += (hour >= 12) ? "pm" : "am";
+\end{c++}
+\end{leftbar}
+
+但很多程序员往往因为习惯了\texttt{if-else}而忽视了这种简洁的表达式。但是，当表达式变得非常复杂时，\texttt{if-else}可能是更好的选择。
+
+反例：
+\begin{leftbar}
+\begin{c++}
+return exponent >= 0 ? mantissa * (1 << exponent) : mantissa / (1 << -exponent);
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+if (exponent >= 0)
+{
+    return mantissa * (1 << exponent);
+}
+else
+{
+    return mantissa / (1 << -exponent);
+}
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+当逻辑表达式已经具有\ascii{true或false}语义时，则无需显示地加上\ascii{true或false}
+\end{regulation}
+
+反例：
+\begin{leftbar}
+\begin{c++}
+bool exist = erabs.contains(ErabId(2)) ? true : false;
+if(exist == true)
+{
+    ...
+}
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+if(erabs.contains(ErabId(2))
+{
+    ...
+}
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+避免函数嵌套过深，擅用卫语句从函数中提前返回，或从嵌套的语句中提前返回；但绝对不滥用\ascii{break, continue}
+\end{regulation}
+
+嵌套过深的函数，将迫使读者跟踪运行时\ascii{stack}，同样给读者增加过重的记忆包袱。
+
+反例：
+\begin{leftbar}
+\begin{c++}
+if (userResult == SUCCESS)
+{
+    if (permissionResult != SUCCESS)
+    {
+        reply.writeError(permissionResult);
+        return;
+    }
+    reply.writeError("");
+}
+else
+{
+    reply.writeError(usrResult);
+}
+\end{c++}
+\end{leftbar}
+
+反例：
+\begin{leftbar}
+\begin{c++}
+if (userResult != SUCCESS)
+{
+    reply.writeError(usrResult);
+    return;
+}
+
+if (permissionResult != SUCCESS)
+{
+    reply.writeError(permissionResult);
+    return;
+}
+
+reply.writeError("");
+
+\end{c++}
+\end{leftbar}
+
+虽然在代码阅读过程中\texttt{break, continue, return}常常打断了人的思维。但在函数短小，意图明确的情况下，\texttt{break, continue, return}相反能给人一种“跳过此项”的特殊意图，代码嵌套逻辑得到了改善。
+
+\begin{regulation}
+擅用解释型变量，或提供意图明确的、内联的提取函数
+\end{regulation}
+
+解释型变量，或提取函数的重构手法有利于改善代码的可读性，往往后者更具有表达力。
+
+反例：
+\begin{leftbar}
+\begin{c++}
+if (line.split(":")[0].trim() == "root")
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+String userName = line.split(":")[0].trim();
+if (userName == "root")
+{
+    ...
+}
+\end{c++}
+\end{leftbar}
+
+\ascii{split}函数将字符串按照指定的正则表达式进行拆分，并提供一个良好的意图变量，将大大改善逻辑的清晰度。
+
+\begin{regulation}
+缩小变量的作用域
+\end{regulation}
+
+当变量的作用域
+
+\end{content}

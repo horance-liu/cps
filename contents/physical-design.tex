@@ -412,7 +412,7 @@ DEFINE_ROLE(EventHandler)
 
 如示例代码，定义了一个\texttt{EventHandler}的接口，对\texttt{Event}仅仅是一个声明依赖，并没有必要包含\texttt{Event.h}，前置声明是解开这类编译依赖的钥匙。
 
-注意，对\texttt{typedef WORD32 Status}的依赖，以及对宏\texttt{DEFINE_ROLE}定义的依赖则需要包含相应的头文件，以便实现该头文件的自满足。
+注意，对\texttt{typedef WORD32 Status}的依赖，以及对宏\texttt{DEFINE\_ROLE}定义的依赖则需要包含相应的头文件，以便实现该头文件的自满足。
 
 正例：
 \begin{leftbar}

@@ -3,12 +3,12 @@
 \qauthor{\ascii{- Steve McConnell}}
 \end{savequote}
 
-\chapter{Naming} 
+\chapter{命名} 
 \label{ch:naming}
 
 \begin{content}
 
-良好的命名将改善代码的表现力，取好名字需要程序员良好的描述技巧和共有的文化背景。与其说它是一门技术，不如说它是一门艺术。必须坚持、并慎重地给程序中的每一个实体取好名字，让其名副其实，代码的可读性将得到大大地改善。
+良好的命名将改善代码的表现力，与其说命名是一门技术，不如说它是一门艺术。必须坚持、并慎重地给程序中的每一个实体取好名字，让其名副其实，代码的可读性将得到极大的改善。
 
 \end{content}
 
@@ -19,6 +19,12 @@
 遵守统一的命名规范
 \end{regulation}
 
+一些程序设计语言，从诞生的时刻就有着自己的文化背景，整个社区有着统一的命名规则。但\cpp{}在社区中存在众多的命名风格，有的与时俱进，也非常人性化；有的则已经与现代软件工程格格不入\footnote{例如社区中依然存在一批忠实的匈牙利的守护者，他们认为一个名称没有前缀和后缀标识它们的类型，他们几乎都看不懂代码了。}。
+
+下文罗列了一些\cpp{}典型的命名规范供参考。每一种命名规范都有自身自己的优缺点，团队应该根据自身的实际情况选择适合自己的命名规范。最重要的是，团队应遵循统一的命名规范，不应该出现两种或两种以上的命名风格。
+
+我们推荐团队使用下文中任意一种命名风格，但如果由于历史遗留原因导致革新非常困难，而无法采用新的命名规范，团队依然要保持统一的命名规范，避免出现多种命名风格。
+
 \begin{table}[H]
 \resizebox{0.95\textwidth}{!} {
 \begin{tabular*}{1.2\textwidth}{@{}ll@{}}
@@ -26,24 +32,103 @@
 \ascii{Identifier} & \ascii{Examples} \\
 \midrule
 \ascii{Namespace}  & \ascii{std, dcm, mockcpp, testing} \\
-\ascii{Class} & \ascii{Timer, FutureTask, LinkedHashMap, HttpServlet} \\ 
+\ascii{Class/Struct/Union} & \ascii{Timer, FutureTask, LinkedHashMap, HttpServlet} \\ 
 \ascii{Method} & \ascii{remove, ensureCapacity, getCrc} \\
-\ascii{Constants} & \ascii{IDLE, ACTIVE} \\
+\ascii{Constant/Macro/Enum} & \ascii{IDLE, ACTIVE, MAX\_LINK\_NUM} \\
 \ascii{Local Variable} & \ascii{i, xref, houseNumber} \\
 \ascii{Type Parameter} & \ascii{T, E, K, V, X, T1, T2} \\
 \bottomrule
 \end{tabular*}
 }
-\caption{命名规范}
-\label{tbl:identifier-examples}
+\caption{驼峰命名规范1}
+\label{tbl:naming-1}
+\end{table}
+
+还有一种命名风格与上一种风格类同，只是成员函数/函数都以大写开头的驼峰命名。
+
+\begin{table}[H]
+\resizebox{0.95\textwidth}{!} {
+\begin{tabular*}{1.2\textwidth}{@{}ll@{}}
+\toprule
+\ascii{Identifier} & \ascii{Examples} \\
+\midrule
+\ascii{Namespace}  & \ascii{std, dcm, mockcpp, testing} \\
+\ascii{Class/Struct/Union} & \ascii{Timer, FutureTask, LinkedHashMap, HttpServlet} \\ 
+\ascii{Method} & \ascii{Remove, EnsureCapacity, GetCrc} \\
+\ascii{Constant/Macro/Enum} & \ascii{IDLE, ACTIVE, MAX\_LINK\_NUM} \\
+\ascii{Local Variable} & \ascii{i, xref, houseNumber} \\
+\ascii{Type Parameter} & \ascii{T, E, K, V, X, T1, T2} \\
+\bottomrule
+\end{tabular*}
+}
+\caption{驼峰命名规范2}
+\label{tbl:naming-2}
+\end{table}
+
+
+第三种命名风格，主要体现在标准库或\ascii{Boost}准标准库社区，其规则非常简单，下划线分割的全小写，或下划线分割的全大写。
+
+\begin{table}[H]
+\resizebox{0.95\textwidth}{!} {
+\begin{tabular*}{1.2\textwidth}{@{}ll@{}}
+\toprule
+\ascii{Identifier} & \ascii{Examples} \\
+\midrule
+\ascii{Namespace}  & \ascii{boost, details, mpl} \\
+\ascii{Class/Struct/Union} & \ascii{any, is\_enum, shared\_ptr} \\ 
+\ascii{Method} & \ascii{any\_cast, type\_of} \\
+\ascii{Constant/Macro/Enum} & \ascii{IDLE, ACTIVE, MAX\_LINK\_NUM} \\
+\ascii{Local Variable} & \ascii{i, xref, house\_number} \\
+\ascii{Type Parameter} & \ascii{T, E, K, V, X, T1, T2} \\
+\bottomrule
+\end{tabular*}
+}
+\caption{标准库或\ascii{boost}命名规范}
+\label{tbl:naming-3}
 \end{table}
 
 \begin{regulation}
-类名应该是名词或名词短语；接口可以是形容词; 方法名应该是动词或动词短语; 返回值为\ascii{bool，加上is, has, can, should, need}将会增强语意。
+绝不使用汉语拼音命名
 \end{regulation}
 
-以bool变量为例，如下例代码所示。
+\begin{regulation}
+类名应该是名词或名词短语；接口可以是形容词; 方法名应该是动词或动词短语
+\end{regulation}
 
+\begin{table}[H]
+\resizebox{0.95\textwidth}{!} {
+\begin{tabular*}{1.2\textwidth}{@{}ll@{}}
+\toprule
+\ascii{类别} & \ascii{举例} \\
+\midrule
+\ascii{正确的类名}  & \ascii{AddressParser, EventRegistry} \\
+\ascii{错误的类名} & \ascii{ParseAddress, RegisterEvent} \\
+\bottomrule
+\end{tabular*}
+}
+\caption{类名}
+\label{tbl:naming-4}
+\end{table}
+
+接口可以是形容词，最为常见的就是定义能力接口，即以\ascii{-able}结尾。
+
+正例：
+\begin{leftbar}
+\begin{c++}
+#include "base/Keywords.h"
+
+DEFINE_ROLE(Runnable)
+{
+    ABSTRACT(void run());
+};
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+如果函数返回值为\ascii{bool}，加上\ascii{is, has, can, should, need}将会增强语意
+\end{regulation}
+
+反例：
 \begin{leftbar}
 \begin{c++}
 bool readPassword = true;
@@ -57,6 +142,7 @@ bool readPassword = true;
   \eitem{\ascii{The password has already been read}}
 \end{enum}
 
+正例：
 \begin{leftbar}
 \begin{c++} 
 bool needPassword = true;
@@ -64,20 +150,8 @@ bool userIsAuthenticated = true;
 \end{c++}
 \end{leftbar}
 
-接口可以是形容词，最为常见的就是定义能力接口，即以\ascii{-able}结尾。
-\begin{leftbar}
-\begin{c++}
-#include "base/Keywords.h"
-
-INTERFACE(Runnable)
-{
-    virtual void run() = 0;
-}
-\end{c++}
-\end{leftbar}
-
 \begin{regulation}
-丰富你的单词库，在面对具体问题时你具有更多的\ascii{Colorfull Words}.
+丰富你的单词库，在面对具体问题时你具有更多的\ascii{Colorfull Words}
 \end{regulation}
 
 如\reftbl{colorful-words}所示。
@@ -100,16 +174,67 @@ INTERFACE(Runnable)
 \end{table}
 
 \begin{regulation}
-程序中每个实体都应该有一个\ascii{Intention-Revealing}名称。
+名字在明确意图的前提下越短越好
+\end{regulation}
+
+反例：
+\begin{leftbar}
+\begin{c++}
+ControllerForEfficientHandlingOfStrings
+ControllerForEfficientStorageOfStrings
+\end{c++}
+\end{leftbar}
+
+因为这两个类名实在是太相似了，一时间很难区分。当别人打算复用你的代码时，必然承受着巨大的记忆包袱。
+
+另外，实体名称的长度应该于作用域的大小成正比。如果是一个实体暴露在全局命名空间，则需要适当增加名字长度，防止名字冲突\footnote{应该使用命名空间，避免增加模块前缀信息。}。相反地，在一个很小的函数之内可见的局部变量，尤其在一个短小的\ascii{for}循环作用域内，完全没有必要取一个很长的名字。
+
+反例：
+\begin{leftbar}
+\begin{c++}
+void MutilEventListener::onEventDown()
+{
+    for(int index=0; index!=listeners.size(); index++)
+    {
+        listeners[index].onEventDown();
+    }
+}
+\end{c++}
+\end{leftbar}
+
+优秀的程序员在命名的长短的取舍总是游刃有余，但从来没有降低过代码的意图。
+
+正例：
+\begin{leftbar}
+\begin{c++}
+void MutilEventListener::onEventDown()
+{
+    for(int i=0; i!=listeners.size(); i++)
+    {
+        listeners[i].onEventDown();
+    }
+}
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+程序中每个实体都应该有一个\ascii{Intention-Revealing}名称
 \end{regulation}
 
 \begin{leftbar}
 \begin{c++}
-vector<vector<int> > getThem() {
+vector<vector<int> > getThem() 
+{
     vector<vector<int> > list1;
-    for (auto x : theList)
-      if (x[0] == 4) 
-        list1.add(x);
+    
+    for(auto x : theList)
+    {
+        if(x[0] == 4)
+        {   
+            list1.add(x);
+        }
+    }
+    
     return list1;
 }
 \end{c++}
@@ -134,56 +259,32 @@ struct Cell
     bool isFlagged() const;
 
 private:
-    vector<int> states;
+    std::vector<int> states;
 };
 
-typedef vector<Cell> Cells;
+using Cells = std::vector<Cell*>;
 
 \end{c++}
 \end{leftbar}
 
-重构之后的效果，抽象和可读性得到了改善。
+重构之后的效果，抽象和可读性得到了改善\footnote{此处为了方便举例，使用了\cpp{}\ascii{11}的\ascii{for-each, using}别名定义的语法，简化迭代器的操作。}。
 
 \begin{leftbar}
 \begin{c++}
-Cells getFlaggedCells() {
+Cells getFlaggedCells() const
+{
     Cells flaggedCells;
-    for (auto cell : gameBoard)
-      if (cell.isFlagged())
-        flaggedCells.add(cell);
+
+    for(auto cell : gameBoard)
+    { 
+        if(cell->isFlagged())
+        {
+            flaggedCells.push_back(cell);
+        }
+    }
+
     return flaggedCells;
 }
-\end{c++}
-\end{leftbar}
-
-注：本例使用了\ascii{C++ 11}的\ascii{for-each}语法，简化迭代器的操作。
-
-\begin{regulation}
-使用注释不如花费更多时间给实体取一个好名字。
-\end{regulation}
-
-\begin{leftbar}
-\begin{c++}
-int time; // elapsed time in days
-\end{c++}
-\end{leftbar}
-
-\begin{leftbar}
-\begin{c++}
-int elapsedTimeInDays;
-\end{c++}
-\end{leftbar}
-
-注释应成为一种羞耻的活动，当需要添加注释的时候，往往是改善设计的最好时机。
-
-但这不代表所有的代码都不写注释，即使我更加习惯用代码阐述意图，但有时也会增加必要的注释使代码更加容易被别人理解和维护。
-
-当在操作位运算时，提供比特位的内存映像；定义正则表达式时，提供更直观的格式说明，将大大改善代码的可读性；另外，如果在代码中存在特殊的陷阱、实现手法等情况，此时注释变得尤为宝贵。
-
-\begin{leftbar}
-\begin{c++}
-// Fast version of "hash = (65599 * hash) + c"
-hash = (hash << 6) + (hash << 16) - hash + c;
 \end{c++}
 \end{leftbar}
 
@@ -191,10 +292,10 @@ hash = (hash << 6) + (hash << 16) - hash + c;
 避免在名称中携带数据结构的信息
 \end{regulation}
 
-别用\ascii{accountList，accountArray}指定一组账号，当包含\ascii{Account}的容器不在是一个\ascii{List}或\ascii{Array}的时候，就会引发错误的判断。所以，用\ascii{accountGroup}，\ascii{bunchOfAccounts}，甚至直接使用\ascii{accounts}，情况都会更好一些。
+别用\texttt{accountList，accountArray}指定一组账号，当包含\texttt{Account}的容器不在是一个\texttt{List}或\texttt{Array}的时候，就会引发错误的判断。所以，用\texttt{accountGroup}，\texttt{bunchOfAccounts}，甚至直接使用\texttt{accounts}，情况都会更好一些。
 
 \begin{regulation}
-\ascii{Noise Words are Redundant}，消除噪声后将得到一个更加精准的名字。
+\ascii{Noise Words are Redundant}，消除噪声后将得到一个更加精准的名字
 \end{regulation}
 
 \begin{table}[H]
@@ -212,12 +313,12 @@ hash = (hash << 6) + (hash << 16) - hash + c;
 \bottomrule
 \end{tabular*}
 }
-\caption{Noise Words are Redundant}
+\caption{消除冗余的噪声}
 \label{tbl:redundant-words}
 \end{table}
 
 \begin{regulation}
-使用\ascii{Domain}的名称，将直白地表明你的设计
+使用\ascii{Domain}领域内的名称，将更直白地表明你的设计，增强领域内成员的沟通
 \end{regulation}
 
 \begin{enum}
@@ -226,26 +327,36 @@ hash = (hash << 6) + (hash << 16) - hash + c;
   \eitem{\ascii{AppendAble, Closeable, Runnable, Readable, Invokable}}
 \end{enum}
 
+当使用\texttt{Visitor}，你在使用访问者模式；当使用\texttt{valueOf, of}，你在使用静态工厂方法。领域内的命名风格，让领域内的成员更加快捷地理解你的设计意图。
+
 \end{content}
 
-\section{Hungarian Notation}
+\section{匈牙利命名}
 \begin{content}
 
-\begin{regulation}
+\begin{advise}
 摒弃匈牙利命名
-\end{regulation}
+\end{advise}
 
-匈牙利命名曾风靡一时，但是，现代编程语言具有更丰富的类型系统；人们更趋于使用更小的类，更短的函数，让每一个变量定义都在视野范围之内；\ascii{IDE}变得越来智能和强大，匈牙利命名反而变成了一种噪声和肉刺。
+匈牙利命名曾风靡一时。但是，现代编程语言具有更丰富的类型系统；人们更趋于使用更小的类，更短的函数，让每一个变量定义都在可控的视野范围之内；此外，\ascii{IDE}变得越来智能和强大，匈牙利命名反而变成了一种噪声和肉刺。
 
-\begin{regulation}
+\begin{advise}
 摒弃给成员变量加前缀，或后缀
-\end{regulation}
+\end{advise}
 
-为类的成员变量增加\ascii{m\_}前缀是为了让成员变量与普通的变量有所区别，尤其在巨类时，\ascii{m\_}前缀可能有存在的必要。但与其写形如\ascii{m\_name}的成员变量，还不如花费更多的时间将类分解；当类足够小，职责单一，使用现代\ascii{IDE}的着色，前缀就像一根刺，让你的眼睛不舒服。
+为类的成员变量增加\ascii{m\_}前缀同样没有必要。与其在在犹豫加前缀还是不加前缀，不如花费更多的时间将类分解；当类足够小，职责足够单一，使用现代\ascii{IDE}的着色功能，成员变量和普通变量一眼便能识别开来\footnote{\ascii{Eclipse}默认使用蓝色与普通变量区别开来，其他\ascii{IDE}也提供类似的功能。}。
 
-\begin{regulation}
+\begin{advise}
+摒弃常量的前缀
+\end{advise}
+
+常量前增加\ascii{k\_}前缀同样没有必要，如果熟悉了大写、下划线隔开的命名风格，\ascii{k\_}前缀完全属于多余。
+
+\begin{advise}
 摒弃接口和类的前缀
-\end{regulation}
+\end{advise}
+
+在接口前增加\ascii{I\_}，在类前增加\ascii{C\_}，同样完全没有必要，它只能对重构带来阻力，百害而无一利。
 
 \begin{leftbar}
 \begin{c++}
@@ -254,13 +365,118 @@ hash = (hash << 6) + (hash << 16) - hash + c;
 
 struct TransactionInfo;
 
-INTERFACE(IAction)
+DEFINE_ROLE(IAction)
 {
-    virtual Status exec(const TransactionInfo&) = 0;
-}
+    ABSTRACT(Status exec(const TransactionInfo&));
+};
 \end{c++}
 \end{leftbar}
 
 \ascii{Action}前面的\ascii{I}就是一句废话。如果非得在接口与实现中选择，宁愿选择实现中增加\ascii{Impl}后缀。
 
 \end{content}
+
+\section{注释}
+\begin{content}
+
+\begin{regulation}
+注释不如花费更多时间给实体取一个好名字，让其名副其实
+\end{regulation}
+
+反例：
+\begin{leftbar}
+\begin{c++}
+int time; // elapsed time in days
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+int elapsedTimeInDays;
+\end{c++}
+\end{leftbar}
+
+注释应成为一种羞耻的活动，当需要添加注释的时候，往往是改善设计的最好时机。
+
+\begin{regulation}
+消除所有没有必要的注释
+\end{regulation}
+
+没有携带任何信息量的注释都是没有必要的。如下列的注释，维护它简直就是一种巨大的包袱，有时候它的存在就像一个笑话。它就像在挑战读者的智商，谁都知道它是一个构造函数。
+
+反例：
+\begin{leftbar}
+\begin{c++}
+/**
+ * Constructor
+ */
+InvokedAtMost(const unsigned int times);
+
+/**
+ * @param Invocation
+ * @return bool
+ */
+bool matches(const Invocation& inv) const;
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+消除所有误导性、过时的、与设计实现不匹配的注释
+\end{regulation}
+
+如果注释和代码已经失去匹配，意图甚至是相反的。这样的注释如果继续存在，贻害的肯定不止一个人。“假如代码和注释不一致，那么很可能两者都是错误的”，\ascii{Norm Schryer}形象地描述了不一致的注释给代码维护者带来的困扰。
+
+\begin{regulation}
+消除所有日志型、归属、签名的注释
+\end{regulation}
+
+修正一个\ascii{bug}时，都需要在函数头的注释表中记录被次修改的内容。放弃这种“好”习惯吧，请将这些详细的信息提交给源代码控制系统，那里是此类注释最好的归所。
+
+\begin{regulation}
+消除所有\ascii{//end if, //end while, //end for, // end try}的注释
+\end{regulation}
+
+因为逻辑太过于冗长、复杂，又为了增强可读性，往往在花括号后面标记\ascii{//end if, //end while, //end for, // end try}，这往往是简化表达式、提取函数的最佳时机。
+
+\begin{regulation}
+已经被注释掉的代码，应该立即删除
+\end{regulation}
+
+不要珍惜这些冗余的代码，害怕丢掉这些代码而买不到后悔药。你要相信，从源代码控制系统中追回这份被删除的代码易如反掌。
+
+\begin{regulation}
+在需要注释的时候，一定要加注释
+\end{regulation}
+
+因公司版权的保护，需要增加版权法律信息注释\footnote{发布开源代码时，也常常需要增加必要的\ascii{GNU, BSD等}公共许可证}。幸运的是，这类问题可以通过代码模板轻松解决，不会成为造成程序员的任何负担。
+
+在已经尽全力也无法用代码表述清楚时，增加必要的注释会使代码更加容易被别人理解和维护。在这些场景下，注释将成为我们最后一根救命稻草。
+
+\begin{enum}
+  \eitem{代码无法明确的意图也需要增加注释}
+  \eitem{如果在代码中存在特殊的陷阱、实现手法等情况，此时注释变得尤为宝贵}
+\end{enum}
+
+例如，当操作复杂的位运算时，提供比特位的内存映像的注解，将有利于加快读者阅读代码的速度。
+
+正例：
+\begin{leftbar}
+\begin{c++}
+// Fast version of "hash = (65599 * hash) + c"
+hash = (hash << 6) + (hash << 16) - hash + c;
+\end{c++}
+\end{leftbar}
+
+当定义难以理解的正则表达式时，提供更直观的格式说明，同样可以改善对代码的理解。
+
+正例：
+\begin{leftbar}
+\begin{c++}
+// kk::mm::ss, MM dd, yyyy
+std::string timePattern = "\\d{2}:\\d{2}:\\d{2}, \\d{2} \\d{2}, \\d{4}";
+\end{c++}
+\end{leftbar}
+
+\end{content}
+
