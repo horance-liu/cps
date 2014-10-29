@@ -3,7 +3,7 @@
 \qauthor{\ascii{- Brian Kernighan}}
 \end{savequote}
 
-\chapter{Immutability}
+\chapter{不可变性}
 \label{ch:immutability}
 
 \begin{content}
@@ -15,19 +15,20 @@
 \begin{content}
 
 \begin{regulation}
-使用\ascii{const}替代\ascii{\#define}常量的宏定义
+使用\ascii{const}替代\ascii{\#define}宏常量定义
 \end{regulation}
 
-使用\ascii{const}替代宏常量理由在经典的《\ascii{Effective C++}》著作中进行了详尽的描述，但往往受\ascii{C}语言根深蒂固的习惯常常被人遗忘。
+使用\ascii{const}替代宏常量理由在经典的《\ascii{Effective \cpp{}}》著作中进行了详尽的描述，但往往受\clang{}语言根深蒂固的习惯常常被人遗忘。
 
 \begin{regulation}
 当成员函数具有查询语义时应声明为\ascii{const}成员函数
 \end{regulation}
 
-此处具有查询语义的函数，泛指所有对对象状态未产生副作用的函数。\ascii{const}成员函数往往都以\ascii{get, is, has, should}开头。
+此处具有查询语义的函数，泛指所有对对象状态未产生副作用的函数。\texttt{const}成员函数往往都以\texttt{get, is, has, should}开头。
 
-以LTE中对\ascii{RbId}的实现为例。\ascii{RbId}在内存中的映虽然仅仅是一个整数而已，依然提倡对它存在的逻辑进行封装，系统因为这些小类的存在变得更加具有可读性和可复用性。
+以\ascii{LTE}中对\texttt{RbId}的实现为例\footnote{\texttt{RbId}在内存中的映虽然仅仅是一个整数而已，依然提倡对它存在的逻辑进行封装，系统因为这些小类的存在变得更加具有可读性和可复用性。}。
 
+反例：
 \begin{leftbar}
 \begin{c++}
 #include "base/BaseTypes.h"
@@ -49,8 +50,11 @@ private:
 \end{c++}
 \end{leftbar}
 
-此例中未对那些具有查询语义的函数声明为\ascii{const}。\ascii{const}的存在不仅仅是为了提高编译时的安全性检查，更重要的是\ascii{const}建立了用户和类之间的契约关系，并传达了程序员良好设计的心声。当对象以\ascii{pass-by-const-reference}传递时，用户只能调用其\ascii{const}成员函数；此外，\ascii{const}建立的契约，使\ascii{Replace Temp with Query}成为可能。
+此例中未对那些具有查询语义的函数声明为\texttt{const}。\texttt{const}的存在不仅仅是为了提高编译时的安全性检查，更重要的是\texttt{const}建立了用户和类之间的契约关系，并传达了程序员良好设计的心声。
 
+当对象以\ascii{pass-by-const-reference}传递时，用户只能调用其\texttt{const}成员函数；此外，\texttt{const}建立的契约，使\ascii{Replace Temp with Query}成为可能。
+
+正例：
 \begin{leftbar}
 \begin{c++}
 #include "base/BaseTypes.h"
@@ -76,20 +80,36 @@ private:
 \ascii{const}成员函数不应该修改系统的状态
 \end{regulation}
 
-编译器只能保证\ascii{const}成员函数修改成员变量时提示错误，而未对修改全局变量，类的静态变量的情况进行检查，应杜绝此类情况的发生。
+编译器只能保证\texttt{const}成员函数修改成员变量时提示错误，而未对修改全局变量，类的静态变量的情况进行检查，应杜绝此类情况的发生。
 
 \begin{regulation}
 以\ascii{pass-by-reference-to-const}替代\ascii{pass-by-value}，以改善性能，并避免切割问题。
 \end{regulation}
 
-虽然我们不提倡进行过早的优化，但也绝不提倡不成熟的劣化。\ascii{pass-by-reference-to-const}就是此句名言最好的一个实例。
+虽然我们不提倡进行过早的优化，但也绝不提倡不成熟的劣化。\ascii{pass-by-reference-to-const}就是此句名言最好的一个例子。
 
-\begin{regulation}
-当传递内置类型，迭代器及函数对象时，比较适合\ascii{pass-by-value}。但使用\ascii{const}修饰，往往能够改善\ascii{API}的可读性。
-\end{regulation}
+\begin{advise}
+当传递内置类型，迭代器及函数对象时，则可以\ascii{pass-by-value}。但使用\ascii{const}修饰，往往能够改善\ascii{API}的可读性。
+\end{advise}
 
-已知\ascii{Status, ActionId}分别是\ascii{WORD32, WORD16}的\ascii{typedef}，但在设计\ascii{onDone}原型时，\ascii{const}的修饰不仅仅为了改善其安全性，更重要的是与\ascii{TransactionInfo}的\ascii{reference-to-const}形成对称性\footnote{关于对称性，请参考\ascii{Kent Beck}的著作\ascii{《实现模式》}}，改善了\ascii{API}的美感。
+其中，\texttt{Status, ActionId}分别是\texttt{WORD32, WORD16}的\texttt{typedef}，但在设计\texttt{onDone}原型时，\texttt{const}的修饰不仅仅为了改善其安全性，更重要的是与\texttt{TransactionInfo}的\texttt{reference-to-const}形成对称性\footnote{关于对称性，请参考\ascii{Kent Beck}的著作\ascii{《实现模式》}}，改善了\ascii{API}的美感。
 
+反例：
+\begin{leftbar}
+\begin{c++}
+#include "base/Status.h"
+#include "trans-dsl/concept/ActionId.h"
+
+struct TransactionInfo;
+
+struct TransactionListener
+{
+    virtual Status onDone(const TransactionInfo&, ActionId, Status) {}
+};
+\end{c++}
+\end{leftbar}
+
+正例：
 \begin{leftbar}
 \begin{c++}
 #include "base/Status.h"
@@ -105,9 +125,34 @@ struct TransactionListener
 \end{leftbar}
 
 \begin{regulation}
-当返回的是一个新创建的对象时，必须返回其值类型; 更有甚者，返回\ascii{const}的值类型将改善编译时的安全性。
+当返回的是一个新创建的对象时，必须返回其值类型; 更有甚者，返回\ascii{const}的值类型将改善编译时的安全性
 \end{regulation}
 
+反例：
+\begin{leftbar}
+\begin{c++}
+#include "base/Status.h"
+#include "base/BaseTypes.h"
+#include <stddef.h>
+
+struct Gid
+{
+    bool isValid() const;
+
+    Status sendToMe(WORD16 eventId, const void* msg, size_t size) const;
+
+    bool operator==(const Gid& rhs) const;
+    bool operator!=(const Gid& rhs) const;
+
+    static Gid& getSelfGid();
+    static Gid& valueOf(WORD16 value);
+};
+\end{c++}
+\end{leftbar}
+
+静态工厂方法\texttt{valueOf, getSelfGid}返回的是一个新创建的实例，所以返回值必须设计为值类型，提供\texttt{const}的修饰能够加强编译时的安全性检查。
+
+正例：
 \begin{leftbar}
 \begin{c++}
 #include "base/Status.h"
@@ -129,23 +174,21 @@ struct Gid
 \end{c++}
 \end{leftbar}
 
-静态工厂方法\ascii{valueOf, getSelfGid}返回的是一个新创建的实例，所以返回值必须设计为值类型，提供\ascii{const}的修饰能够加强编译时的安全性检查。
-
 \begin{regulation}
 不能返回局部对象的引用或指针。
 \end{regulation}
 
-再返回值类型和引用类型常常会困扰部分初级的\ascii{C++}程序员。其实规则非常简单，返回值对象当且仅当需要创建新对象的时候，此时如果企图返回引用或指针，将导致可怕的运行时异常。
+再返回值类型和引用类型常常会困扰部分初级的\cpp{}程序员。其实规则非常简单，返回值对象当且仅当需要创建新对象的时候，此时如果企图返回引用或指针，将导致可怕的运行时异常。
 
 \end{content}
 
-\section{Immutable Class}
+\section{不可变类}
 
 \begin{content}
 
-\begin{regulation}
-设计\ascii{Immutable Class}表达\ascii{Value Object}的语义
-\end{regulation}
+\begin{advise}
+鼓励设计\ascii{Immutable Class}表达\ascii{Value Object}的语义
+\end{advise}
 
 不可变类的每一个实例在创建的时候就包含了所有必要的信息，其对象在整个生命周期中都不会发生变化。不可变类具有如下几方面的优势：
 \begin{enum}
@@ -165,16 +208,17 @@ struct Gid
 
 不可变类唯一的缺点就是，对于每一个不同的值都需要一个单独的对象。当需要创建大量此类对象时，性能可能成为瓶颈。当性能成为关键瓶颈的时候，为不可变类设计可变配套类是一种典型的设计方式。
 
-例如\ascii{Java}的\ascii{JDK}中，\ascii{String}被设计为不可变类，但在诸如字符串需要大量的替换、追加等场景下，性能可能成为关键瓶颈；\ascii{JDK}提供了\ascii{StringBuilder}的可变配套类来解决此类问题。
+例如\ascii{Java}的\ascii{JDK}中，\texttt{String}被设计为不可变类，但在诸如字符串需要大量的替换、追加等场景下，性能可能成为关键瓶颈；\ascii{JDK}提供了\texttt{StringBuilder}的可变配套类来解决此类问题。
 
-上例讲解的\ascii{RbId}类就是一种典型的不可变类的设计。
+上例讲解的\texttt{RbId}类也是一种典型的不可变类的设计。
 
-\begin{regulation}
+\begin{advise}
 尽量使类的可变性最小化
-\end{regulation}
+\end{advise}
 
-坚决抵制为每一个\ascii{get}函数都写一个\ascii{set}函数，除非存在一个很好的理由。当写一堆无聊的\ascii{get/set}就自居了解面向对象的真谛是幼稚的。
+坚决抵制为每一个\texttt{get}函数都写一个\texttt{set}函数，除非存在一个很好的理由。当写一堆无聊的\texttt{get/set}就自居精通面向对象的精髓是幼稚的。
 
-构造函数应该创建完全初始化的对象，并建立起所有的约束关系。不要为够着函数之外提供其他公开的初始化方法。
+构造函数的职责就是来完成对象的初始化，并建立起所有的约束关系。除非有很好的理由，不要在构造函数之外提供其他公开的初始化方法。
 
 \end{content}
+

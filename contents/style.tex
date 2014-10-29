@@ -15,15 +15,196 @@
 \end{regulation}
 
 \begin{regulation}
-团队使用相同的\ascii{IDE}，并使用统一的代码模板，保持代码风格的一致性
+团队统一使用相同的\ascii{IDE}，并使用统一的代码模板，保持代码风格的一致性
 \end{regulation}
 
 \begin{regulation}
-\ascii{IDE}配置使用等宽字体，抵制使用宋体编程
+团队统一配置\ascii{IDE}使用等宽字体，抵制使用宋体编程
 \end{regulation}
 
+文档中使用宋体展示示例代码，尤其是使用\ascii{Microsoft Word}时，因为存在各种繁琐的格式化，这无可厚非，除非你是一个追求完美的程序员。
+
+但是，我们处在\ascii{IDE}高度发达的时代，如果团队中还有人使用宋体编码，给团队带来各种代码对不齐、缩进混乱的情况，他的品味及其修养，所提的代码只会给团队的其他人挖坑，再挖坑，不要指望他能给团队带来生产力的提升。
+
+优秀的程序员在写第一行代码前，都会将自己的编译环境、颜色、字体等调整到最佳状态，以便在写代码的时候更友好地、更快捷地反馈所存在的问题，提高工作效率。
+
 \begin{regulation}
-\ascii{IDE}配置\ascii{TAB}为\ascii{4}个空格，抵制使用\ascii{TAB}对齐
+团队统一配置\ascii{IDE}的文件编码格式
 \end{regulation}
+
+例如统一为\ascii{UTF-8}，或\ascii{GBK, GB2312}，抵制使用不同的编码，否则中文会出现乱码的现象。
+
+\begin{regulation}
+团队统一配置\ascii{IDE}的\ascii{TAB}为相同数目的空格，坚决抵制使用\ascii{TAB}对齐代码\footnote{\ascii{TAB}一般配置为2或4个空格，所有的编辑器都提供了类似的配置接口}
+\end{regulation}
+
+因各种编辑器解释\ascii{TAB}的长度存在不一致，如果使用\ascii{TAB}对齐代码，可能会使代码缩进混乱不堪。
+
+\end{content}
+
+\section{代码风格}
+
+\begin{content}
+
+\begin{regulation}
+团队应该保持一致的代码风格，例如一致的命名、缩进、空格、空行风格
+\end{regulation}
+
+团队代码拥有一种最权威的风格，整个项目犹如一个人写的一样。业界存在多种经典的代码风格，各自都拥有独特的优势，团队应该统一地选择其中一种风格即可。
+
+\begin{enum}
+  \eitem{\ascii{K\&R}}
+  \eitem{\ascii{BSD/Allman}}
+  \eitem{\ascii{GNU}}
+  \eitem{\ascii{Whitesmiths}}
+\end{enum}
+
+统一代码风格，并非难事，团队发布统一的\ascii{IDE}代码模板，及其定制一个方便的格式化快捷键即可解决所有问题。
+
+\begin{regulation}
+程序实体之间有且仅有一行空行区分
+\end{regulation}
+
+函数之间的空行，能够帮组我们快速定位函数的始末的准确位置；甚至在函数内部，将逻辑相关的代码放在一起，也同样具有意义，能够帮组我们更好地理解代码的语义。
+
+多余的空行完全没有必要，业余程序员总在这些细节处理中存在着或多或少的问题，团队应该杜绝这样的情况发生。
+
+\begin{regulation}
+每个文件末尾都应该有且仅有一行空行，避免编译器警告
+\end{regulation}
+
+如果使用\ascii{Eclipse}，在创建新文件时，\ascii{Eclipse}会自动在文件末添加一行空行；但诸如\ascii{Visual C++}等情况下，则需要程序员在文件末自行添加一行空行。
+
+\begin{regulation}
+在简单逻辑的情况下，鼓励使用\ascii{?:}三元表达式；但是，当表达式变得非常复杂时，\ascii{if-else}可能是更好的选择
+\end{regulation}
+
+反例：
+\begin{leftbar}
+\begin{c++}
+if (hour >= 12) 
+{
+    time += "pm";
+} 
+else 
+{
+    time += "am";
+}
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+time_str += (hour >= 12) ? "pm" : "am";
+\end{c++}
+\end{leftbar}
+
+但很多程序员往往因为习惯了\texttt{if-else}而忽视了这种简洁的表达式。但是，当表达式变得非常复杂时，\texttt{if-else}可能是更好的选择。
+
+反例：
+\begin{leftbar}
+\begin{c++}
+return exponent >= 0 ? mantissa * (1 << exponent) : mantissa / (1 << -exponent);
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+if (exponent >= 0)
+{
+    return mantissa * (1 << exponent);
+}
+else
+{
+    return mantissa / (1 << -exponent);
+}
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+当逻辑表达式已经具有\ascii{true或false}语义时，则无需显示地加上\ascii{true或false}
+\end{regulation}
+
+反例：
+\begin{leftbar}
+\begin{c++}
+bool exist = erabs.contains(ErabId(2)) ? true : false;
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+bool exist = erabs.contains(ErabId(2));
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+擅用卫语句从函数中提前返回，或从嵌套的语句中提前返回；但绝对不滥用\ascii{break, continue}
+\end{regulation}
+
+反例：
+\begin{leftbar}
+\begin{c++}
+bool contains(const std::string* str, const string* substr) 
+{
+    if (str != NULL && substr != NULL)
+    {
+        if (!substr->empty())
+        {
+            ...
+        } 
+    }
+}
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+bool contains(const std::string* str, const string* substr) 
+{
+    if (str == NULL || substr == NULL)
+        return false;
+    
+    if (substr->empty()) 
+        return true;
+
+    ...
+}
+\end{c++}
+\end{leftbar}
+
+虽然在代码阅读过程中\texttt{break, continue, return}常常打断了人的思维。但在函数短小，意图明确的情况下，\texttt{break, continue, return}相反能给人一种“跳过此项”的特殊意图，代码嵌套逻辑得到了改善。
+
+我们赞同\ascii{Dijkstra}提出了结构化编程规则和规范，但对于小函数，这条规则指导意义不是很大，擅用卫语句在此情况下可以改善了代码的清晰度。
+
+\begin{regulation}
+擅用解释型变量，或提供意图明确的、内联的提取函数。
+\end{regulation}
+
+解释型变量，或提取函数的重构手法有利于改善代码的可读性，往往后者更具有表达力。
+
+反例：
+\begin{leftbar}
+\begin{c++}
+if (line.split(":")[0].trim() == "root")
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+String userName = line.split(":")[0].trim();
+if (userName == "root")
+{
+    ...
+}
+\end{c++}
+\end{leftbar}
+
+\ascii{split}函数将字符串按照指定的正则表达式进行拆分，并提供一个良好的意图变量，将大大改善逻辑的清晰度。
 
 \end{content}
