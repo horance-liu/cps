@@ -154,7 +154,7 @@ bool userIsAuthenticated = true;
 丰富你的单词库，在面对具体问题时你具有更多的\ascii{Colorfull Words}
 \end{regulation}
 
-如\reftbl{colorful-words}所示。
+如\reftbl{colorful-words}所示，同一概念是有很多种表达方式的。
 
 \begin{table}[H]
 \resizebox{0.95\textwidth}{!} {
@@ -244,7 +244,7 @@ vector<vector<int> > getThem()
   \eitem{\ascii{vector<vector<int> >}的语法令人抓狂}
   \eitem{\ascii{getThem}让人看不清楚它的本意}
   \eitem{\ascii{theList}到底是什么东西？}
-  \eitem{0下标意味着什么？4又意味着什么？}
+  \eitem{\ascii{0}下标意味着什么？\ascii{4}又意味着什么？}
   \eitem{\ascii{list1}就是为了编译通过吗？}
 \end{enum}
 
@@ -292,11 +292,13 @@ Cells getFlaggedCells() const
 避免在名称中携带数据结构的信息
 \end{regulation}
 
-别用\texttt{accountList，accountArray}指定一组账号，当包含\texttt{Account}的容器不在是一个\texttt{List}或\texttt{Array}的时候，就会引发错误的判断。所以，用\texttt{accountGroup}，\texttt{bunchOfAccounts}，甚至直接使用\texttt{accounts}，情况都会更好一些。
+别用\ascii{accountList，accountArray}指定一组账号，当包含\ascii{Account}的容器不在是一个\ascii{List}或\ascii{Array}的时候，就会引发错误的判断。所以，用\ascii{accountGroup}，\ascii{bunchOfAccounts}，甚至直接使用\ascii{accounts}，情况都会更好一些。
 
 \begin{regulation}
 \ascii{Noise Words are Redundant}，消除噪声后将得到一个更加精准的名字
 \end{regulation}
+
+如\reftbl{redundant-words}所示，消除冗余的噪声，将得到一个更加直观、更漂亮的名字。
 
 \begin{table}[H]
 \resizebox{0.95\textwidth}{!} {
@@ -327,7 +329,8 @@ Cells getFlaggedCells() const
   \eitem{\ascii{AppendAble, Closeable, Runnable, Readable, Invokable}}
 \end{enum}
 
-当使用\texttt{Visitor}，你在使用访问者模式；当使用\texttt{valueOf, of}，你在使用静态工厂方法。领域内的命名风格，让领域内的成员更加快捷地理解你的设计意图。
+当使用\ascii{Visitor}，你在使用访问者模式；当使用\ascii{valueOf,
+of}，你在使用静态工厂方法。领域内的命名风格，让领域内的成员更加快捷地理解你的设计意图。
 
 \end{content}
 

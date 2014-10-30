@@ -34,6 +34,13 @@ while (bytesExpected > bytesReceived)
 
 但是，在\clang{}或者\cpp{}语言中，如果\ascii{==}被误用为\ascii{=}，则可能发生副作用的危险，而且编译时并不能做到安全的检查，从而产生了严重的\ascii{bug}。
 
+\begin{leftbar}
+\begin{c++}
+// 缺少等号，造成严重的运行时错误
+if (ptr = NULL)
+\end{c++}
+\end{leftbar}
+
 幸运的是，现代编译器对此类误用通常报告警告信息；此外如果保持\ascii{TDD}开发节奏，小步前进，此类低级错误很难逃出我们的法眼。
 
 \begin{regulation}
@@ -154,7 +161,9 @@ reply.writeError("");
 \end{c++}
 \end{leftbar}
 
-虽然在代码阅读过程中\texttt{break, continue, return}常常打断了人的思维。但在函数短小，意图明确的情况下，\texttt{break, continue, return}相反能给人一种“跳过此项”的特殊意图，代码嵌套逻辑得到了改善。
+虽然在代码阅读过程中\ascii{break, continue,
+return}常常打断了人的思维。但在函数短小，意图明确的情况下，\ascii{break, continue,
+return}相反能给人一种“跳过此项”的特殊意图，代码嵌套逻辑得到了改善。
 
 \begin{regulation}
 擅用解释型变量，或提供意图明确的、内联的提取函数
