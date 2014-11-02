@@ -13,19 +13,21 @@ Horance Liu
 Install
 ---------------
 You should install full texlive packages.
-  * Ubuntu -- sudo apt-get install texlive-full.
-  * MAC OS -- download [MacTeX.pkg][], and install it.
-  * Microsoft -- download [CTEX-full][], and install it.
+  * __Ubuntu__ -- sudo apt-get install texlive-full.
+  * __MAC OS__ -- download [MacTeX.pkg][], and install it.
+  * __Microsoft__ -- download [CTEX-full][], and install it.
 
 Then you should install some missing chinese fonts.
-  * Ubuntu -- 
+  * __Ubuntu__ -- execute commands as follows: 
+
       sudo mkdir /usr/local/share/fonts/truetype
       sudo cp -R fonts /usr/local/share/fonts/truetype
       sudo mv /usr/local/share/fonts/truetype/fonts /usr/local/share/fornts/truetype/win-fonts
       sudo chown -R root /usr/local/share/fonts/truetype/win-fonts
       sudo fc-cache
-  * Mac OS -- using fontbook
-  * Windows -- copy the all fonts into C:/Windows/Fonts
+
+  * __Mac OS__ -- using fontbook
+  * __Windows__ -- copy the all fonts into C:/WINDOWS/Fonts
 
 [BSD License]: http://opensource.org/licenses/BSD-3-Clause
 [MacTeX.pkg]: http://tug.org/mactex/
