@@ -1,6 +1,6 @@
 C++ Programming Style, Guilds, Rules, and Patterns.
 =============
-Licensed under [BSD License][].
+Licensed under [MIT License][].
 
 Downloads
 ---------
@@ -54,7 +54,7 @@ View PDF
 -----------------
 output/cpp-programming-style.pdf
 
-[BSD License]: http://opensource.org/licenses/BSD-3-Clause
+[BSD License]: http://opensource.org/licenses/mit-license.html 
 [MacTeX.pkg]: http://tug.org/mactex/
 [CTEX-full]: http://www.ctex.org/CTeXDownload
 [https://bitbucket.org/horance/cpp-programming-style]: https://bitbucket.org/horance/cpp-programming-style
