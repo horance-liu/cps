@@ -25,12 +25,12 @@ Then you should install some missing chinese fonts.
 
   * __Ubuntu__ -- execute commands as follows: 
 
-      sudo mkdir /usr/local/share/fonts/truetype
-      sudo cp -R fonts /usr/local/share/fonts/truetype
-      cd /usr/local/share/fonts/truetype
-      sudo mv fonts win-fonts
-      sudo chown -R root win-fonts
-      sudo fc-cache
+      * sudo mkdir /usr/local/share/fonts/truetype
+      * sudo cp -R fonts /usr/local/share/fonts/truetype
+      * cd /usr/local/share/fonts/truetype
+      * sudo mv fonts win-fonts
+      * sudo chown -R root win-fonts
+      * sudo fc-cache
 
   * __Mac OS__ -- using fontbook
   * __Windows__ -- copy the all fonts into C:/WINDOWS/Fonts
