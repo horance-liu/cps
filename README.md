@@ -16,7 +16,7 @@ You should install full texlive packages.
 
   * __Ubuntu__ 
       
-      sudo apt-get install texlive-full.
+      sudo apt-get install texlive-full
  
   * __MAC OS__ -- download [MacTeX.pkg][], and install it.
   * __Microsoft__ -- download [CTEX-full][], and install it.
@@ -26,15 +26,10 @@ Then you should install some missing chinese fonts.
   * __Ubuntu__ -- execute commands as follows: 
 
       sudo mkdir /usr/local/share/fonts/truetype
-      
       sudo cp -R fonts /usr/local/share/fonts/truetype
-      
       cd /usr/local/share/fonts/truetype
-      
       sudo mv fonts win-fonts
-      
       sudo chown -R root win-fonts
-     
       sudo fc-cache
 
   * __Mac OS__ -- using fontbook
