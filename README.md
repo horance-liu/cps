@@ -54,7 +54,7 @@ View PDF
 -----------------
 output/cpp-programming-style.pdf
 
-[BSD License]: http://opensource.org/licenses/mit-license.html 
+[MIT License]: http://opensource.org/licenses/mit-license.html 
 [MacTeX.pkg]: http://tug.org/mactex/
 [CTEX-full]: http://www.ctex.org/CTeXDownload
 [https://bitbucket.org/horance/cpp-programming-style]: https://bitbucket.org/horance/cpp-programming-style
