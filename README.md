@@ -10,20 +10,26 @@ Developers
 ----------------
 Horance Liu
 
-Install
+Install Tex
 ---------------
 You should install full texlive packages.
 
   * __Ubuntu__ 
       
-      sudo apt-get install texlive-full
+      * sudo apt-get install texlive-full
  
-  * __MAC OS__ -- download [MacTeX.pkg][], and install it.
-  * __Microsoft__ -- download [CTEX-full][], and install it.
+  * __MAC OS__
+      * download [MacTeX.pkg][], and install it.
 
+  * __Microsoft__ 
+      
+      * download [CTEX-full][], and install it.
+
+Install Missing Fonts
+---------------
 Then you should install some missing chinese fonts.
 
-  * __Ubuntu__ -- execute commands as follows: 
+  * __Ubuntu__ 
 
       * sudo mkdir /usr/local/share/fonts/truetype
       * sudo cp -R fonts /usr/local/share/fonts/truetype
@@ -32,8 +38,21 @@ Then you should install some missing chinese fonts.
       * sudo chown -R root win-fonts
       * sudo fc-cache
 
-  * __Mac OS__ -- using fontbook
-  * __Windows__ -- copy the all fonts into C:/WINDOWS/Fonts
+  * __Mac OS__ 
+    
+      * import all missing fonts into fontbook
+
+  * __Windows__
+ 
+      * copy the all missing fonts into C:/WINDOWS/Fonts
+
+Generate PDF
+-----------------
+Run make
+
+View PDF
+-----------------
+output/cpp-programming-style.pdf
 
 [BSD License]: http://opensource.org/licenses/BSD-3-Clause
 [MacTeX.pkg]: http://tug.org/mactex/
