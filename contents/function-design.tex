@@ -6,11 +6,11 @@
 \qauthor{\ascii{– Jon Bentley}}
 \end{savequote}
 
-\chapter{Functions and Operators}
+\chapter{函数设计}
 \label{ch:functions-operators}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Function}
+\section{函数}
 
 \begin{content}
 
@@ -18,7 +18,9 @@
 避免过长，嵌套过深的函数实现
 \end{regulation}
 
-我讨厌长函数，犹如讨厌重复一样。长函数往往伴随着复杂的逻辑判断，过深嵌套逻辑。理解它们的业务规则是一件痛苦的事情。
+我讨厌长函数，犹如讨厌重复一样。长函数往往伴随着复杂的逻辑判断，过深嵌套逻辑。
+
+但也必要硬性地规定团队函数不能超过固定的行，因为这个规则很容易被打破。如果大家都遵循良好的设计原则，养成良好的职责分离的设计的基本素养，实现出来的函数大多平均都在\ascii{5}行以内，或者更少。这绝对不是理想，已经存在众多的、典型的成功案例。
 
 \begin{regulation}
 只做一件事，并做好这件事
@@ -43,9 +45,9 @@
   \eitem{\ascii{实现对称性}}
 \end{enum}
 
-正如\ascii{Bob}大叔提到的那样: 程序就像是一系列的以\ascii{TO}起头的段落，每一段落都描述了当前抽象层次的逻辑，并引用下一抽象层次的，以TO开头的段落。
+正如\ascii{Bob}大叔提到的那样: 程序就像是一系列的以\ascii{TO}起头的段落，每一段落都描述了当前抽象层次的逻辑，并引用下一抽象层次的，以\ascii{TO}开头的段落。
 
-下例虽然以\ascii{Java}为例，但重点没有偏离，规则同样适用于\ascii{C/C++}。
+下例虽然以\ascii{Java}为例，但重点没有偏离，规则同样适用于\clang{}/cpp{}。
 
 \begin{leftbar}
 \begin{java}
@@ -91,42 +93,13 @@ public class List<E> {
 检查参数的有效性
 \end{regulation}
 
-绝大部分的函数对于传递的参数都有限制，这时需要在函数执行之前完成参数的合法性校验。\ascii{C/C++}语言不能天然地支持“按契约设计”的语言，但使用前置的参数检查将大大改善程序的健壮性。
-
-\begin{regulation}
-将局部变量的作用域最小化
-\end{regulation}
-
-这条规则可能对\ascii{C}程序员更有指导意义，但改变这样的陋习可能需要一段时间。例如局部于\ascii{for}的循环变量，当它的使命完成之后，强制让编译器将其销毁，避免这个变量再次被使用的风险。
-
-\begin{leftbar}
-\begin{c++}
-map<string, string> addressBook; 
-for ( auto entry : addressBook ) 
-{ 
-    cout << entry.first << "," << entry.second << endl;
-}
-\end{c++}
-\end{leftbar}
-
-同样的规则也使用与其他常见的情况，例如\ascii{if}语句，简化空指针的判断，简洁有效。
-
-\begin{leftbar}
-\begin{c++}
-if (PaymentInfo* info = database.ReadPaymentInfo()) 
-{
-    cout << "User paid: " << info->amount() << endl;
-}
-\end{c++}
-\end{leftbar}
-
-但也有人对于\ascii{if}语句这样的用法持反对态度，因为他们认为这样做更容易出错。
+绝大部分的函数对于传递的参数都有限制，这时需要在函数执行之前完成参数的合法性校验。\clang{}/cpp{}虽不能天然地支持“按契约设计”，但前置的参数检查将大大改善程序的健壮性。
 
 \begin{regulation}
 分离查询与指令
 \end{regulation}
 
-函数应该只拥有清晰明确的、唯一的职责。如果函数既修改对象状态，又返回对象的状态信息，则常常会导致混乱。产生副作用的指令操作，都是系统状态的一种变更，将产生时序上的耦合和顺序的依赖。尤其当查询和指令混合在一起的时候，查询函数的无副作用的优点将不复存在。
+函数应该只拥有清晰明确的、唯一的职责。如果函数既修改对象状态，又返回对象的状态信息，则常常会导致混乱。产生副作用的指令操作，都是系统状态的一种变更，将产生时序上的耦合和顺序的依赖。尤其当查询和指令混合在一起的时候，查询函数的无副作用的优点将不复存在；如果一个函数名本身具有查询语义，但混合了指令操作，将产生更大的反直觉。
 
 \begin{regulation}
 使用\ascii{Null Object}替代空指针
@@ -138,7 +111,7 @@ if (PaymentInfo* info = database.ReadPaymentInfo())
 对于参数类型，返回值类型，优先使用接口类型
 \end{regulation}
 
-这是基于接口编程的良好习惯，是优秀设计的体现。
+遵循按接口编程的良好习惯，是优秀设计师的基本素养。
 
 \begin{regulation}
 对于\ascii{bool}参数，优先使用两个元素的枚举类型
@@ -237,12 +210,12 @@ BufferedOutputStream bos = ctxt.createScratchFileStream(className);
 
 \end{content}
 
-\section{Operators}
+\section{重载操作符}
 
 \begin{content}
 
 \begin{regulation}
-重载运算符必须保持原有操作符的语义，
+重载运算符必须保持原有操作符的语义
 \end{regulation}
 
 如果重载运算符改变了程序员对固有知识的理解，将加大放错的几率。
@@ -251,149 +224,85 @@ BufferedOutputStream bos = ctxt.createScratchFileStream(className);
 谨慎地使用转换运算符
 \end{regulation}
 
-转换运算符是一种危险的操作，它常常无声无息地让人犯错。谨慎使用，并非绝不使用，在合适的情况下，使用装换运算符，能够得到更为简洁的代码。
+转换运算符因为其隐式转换而变得非常神秘，需谨慎使用。并并非在任何场景都不使用转换操作符，在合适的情况下使用装换运算符，能够得到更为简洁的代码。
 
 \begin{regulation}
 优先使用前置\ascii{++operator}
 \end{regulation}
 
-这是提升效率的一种举措，提倡使用前置的操作运算符。尤其在操作重载了\ascii{++operator}的类对象，例如迭代器，更应该使用\ascii{++operator}。
+当重载了\ascii{++operator}的类对象，例如迭代器，更提倡使用\ascii{++operator}，这是提升效率的一种举措。
 
 \begin{regulation}
 使用\ascii{operator*, operator->}实现类的包装或修饰
 \end{regulation}
 
-\ascii{operator*, operator->}操作符是提供包装和修饰功能的特殊工具，是一种典型的间接技术\footnote{软件工程有一条黄金定律：任何问题都可以通过增加一个间接层来解决。}。它的最大优势是为用户提供良好的、人性化操作接口。
+\ascii{operator*, operator->}操作符是提供包装和修饰功能的特殊工具，是一种典型的间接技术\footnote{软件工程有一条黄金定律：任何问题都可以通过增加一个间接层来解决。}。它的最大优势是为用户提供良好的、人性化间接操作接口。
 
-以扩展了的\ascii{placement new}为例，讲解\ascii{operator*, operator->}的使用。
+\ascii{std::unique\_ptr, std::shared\_ptr}等智能指针，最关键的也是重载了这两个操作符，从而实现了操作智能指针犹如操作原始指针一般。
+
+\ascii{Placment}本身也是一个包装器，只不过它修饰的是一块原始的内存。通过\ascii{operator*, operator->}可方便地操作寄存在原始内存上的\ascii{T}对象。
+
+\ascii{AutoMsg}也是一个较为经典的例子，\ascii{AutoMsg}将消息对象的构造搬迁到了堆上进行初始化，从而避免了由于消息过大而导致的栈溢出的风险。当函数调用出栈时，内存自动释放。
 
 \begin{leftbar}
 \begin{c++}
-#include <string.h>
-#include <new>
-
-template <typename T>
-struct Placement
+template <typename Msg>
+struct AutoMsg
 {
-    void* alloc()
+    AutoMsg() : msg(new Msg)
+    {}
+    
+    ~AutoMsg()
     {
-        memset(u.buff, 0, sizeof(u));
-        return (void*)u.buff;
+        delete msg;
     }
-
-    void dealloc()
+    
+    Msg& operator*()
     {
-        getObject()->~T();
+        return *msg;
+    }
+    
+    Msg* operator->()
+    {
+        return msg;
+    }
+    
+private:
+    Msg* msg;
+};
+\end{c++}
+\end{leftbar}
+
+\begin{leftbar}
+\begin{c++}
+#include <money/domain/Account.h>
+#include <money/msg/TransMoneyMsg.h>
+#include <base/Asserter.h>
+    
+struct RemoteAccount
+{
+    Status transMoneyTo(const Account& to)
+    {
+        AutoMsg<TransMoneyMsg> msg;
+        
+        ASSERT_SUCC_CALL(buildMsg(*msg));
+        ASSERT_SUCC_CALL(sendMsg(to, *msg));
+        
+        return SUCCESS;
+    }
+    
+private:
+    Status buildMsg(TransMoneyMsg&)
+    {
+        // no implement
+    }
+    
+    Status sendMsg(const Account& to, const TransMoneyMsg& msg)
+    {
+        // no implement
     }    
-
-    T* operator->() const
-    {
-        return (T*)u.buff;
-    }
-
-    T& operator*() const
-    {
-        return *(T*)u.buff;
-    }
-
-    T* getObject() const
-    {
-        return (T*)u.buff;
-    }
-
-private:
-    union
-    {
-        char   c;
-        short  s;
-        int    i;
-        long   l;
-        float  f;
-        double d;
-        void*  p;
-
-        char buff[sizeof(T)];
-    }u;
 };
 \end{c++}
 \end{leftbar}
-
-\ascii{Placement}本质上就是一块内存，它是在原生内存上提供了一层直观的，人性化的操作接口。
-
-
-众所周知，当定义一个对象的数组时，该对象的类必须提供一个默认构造函数。如下例，\ascii{ReleasingRbList}如果定义了一个\ascii{ReleasingRb}，则此时因为\ascii{ReleasingRb}没有提供对应的默认构造函数而出现编译错误。
-
-\ascii{Placement}能否发挥其优势，是解决此类问题的灵丹妙药；在需要创建对象的时候，再\ascii{placement new}出来，这也是一种典型的延迟初始化技术。
-
-\begin{leftbar}
-\begin{c++}
-#include "base/Status.h"
-#include "erab/ErabId.h"
-#include "rb/RbId.h"
-#include "base/Placement.h"
-
-struct ReleasingRb
-{
-    ReleasingRb(const ErabId& erabId, const RbId& rbId);
-
-    const ErabId& getErabId() const;
-    const RbId& getRbId() const;
-
-private:
-    ErabId erabId;
-    RbId   rbId;
-};
-
-struct ReleasingRbList
-{
-    ReleasingRbList();
-
-    bool contains(const ErabId& erabId) const;
-    Status addReleasingRb(const ErabId& erabId, const RbId& rbId);
-
-private:
-    enum { MAX_UE_ERAB_NUM = 8 };
-
-    BYTE n;
-    Placement<ReleasingRb> relErabs[MAX_UE_ERAB_NUM];
-};
-\end{c++}
-\end{leftbar}
-
-\begin{leftbar}
-\begin{c++}
-#include "erab/ReleasingRbList.h"
-#include "base/Assertions.h"
-
-ReleasingRbList::ReleasingRbList() : n(0)
-{	
-}
-
-Status ReleasingRbList::addReleasingRb(const ErabId& erabId, const RbId& rbId)
-{
-    ASSERT_FALSE(contains(erabId));
-    ASSERT_TURE(n < MAX_UE_ERAB_NUM);
-
-    new (relErabs[n++].alloc()) ReleasingRb(erabId, rbId);
-
-    return DCM_SUCCESS;
-}
-
-bool ReleasingRbList::contains(const ErabId& erabId) const
-{
-    for (BYTE i = 0; i < n; ++i)
-    {
-        if(relErabs[i]->getErabId() == erabId)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-\end{c++}
-\end{leftbar}
-
-\ascii{relErabs[i]->getErabId()}调用时，实际上调用了\ascii{Placement::operator->}，但从实现上看，给用户调用提供了很大的灵活性和方便性，这还是得倚仗了\ascii{operator->}带来的间接性的功劳。
 
 \end{content}

@@ -195,6 +195,33 @@ if (userName == "root")
 缩小变量的作用域
 \end{regulation}
 
-当变量的作用域
+\begin{regulation}
+将局部变量的作用域最小化
+\end{regulation}
+
+这条规则可能对从\clang{}转变过来的\cpp{}程序员更有指导意义，但改变这样的陋习可能需要一些适应的时间。例如局部于\ascii{for}的循环变量，当它的使命完成之后，应立即销毁它，避免这个变量被再次使用的风险。
+
+\begin{leftbar}
+\begin{c++}
+map<string, string> addressBook;
+for (auto &entry : addressBook) 
+{ 
+    std::cout << entry->first << "," << entry->second << std::endl;
+}
+\end{c++}
+\end{leftbar}
+
+同样的规则也使用与其他常见的情况，例如\ascii{if}语句，简化空指针的判断，简洁有效。
+
+\begin{leftbar}
+\begin{c++}
+if (PaymentInfo* info = database.readPaymentInfo()) 
+{
+    std::cout << "User paid: " << info->amount() << std::endl;
+}
+\end{c++}
+\end{leftbar}
+
+但也有人对于\ascii{if}语句这样的用法持反对态度，因为他们害怕这样做更容易出错。但在最坏的情况下，即使误写成了\ascii{==}，也只是编译时错误。
 
 \end{content}
