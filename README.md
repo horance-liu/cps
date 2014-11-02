@@ -21,8 +21,8 @@ Then you should install some missing chinese fonts.
  * git checkout b0d807d76f78a8c686a38824761eae77cb116734
  * Ubuntu -- sudo mkdir /usr/local/share/fonts/truetype
              sudo cp -R fonts /usr/local/share/fonts/truetype
-             sudo mv /usr/local/share/fonts/truetype/Fonts /usr/local/share/fornts/truetype/win-fonts
-             sudo chown -R root /usr/local/share/fonts/truetype/Fonts
+             sudo mv /usr/local/share/fonts/truetype/fonts /usr/local/share/fornts/truetype/win-fonts
+             sudo chown -R root /usr/local/share/fonts/truetype/win-fonts
              sudo fc-cache
  * Mac OS -- using fontbook
  * Windows -- copy the all fonts into C:/Windows/Fonts
