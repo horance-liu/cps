@@ -137,16 +137,18 @@ struct GlobalIdentity
 
     bool isValid() const;
 
-    bool operator==(const Gid& rhs) const;
-    bool operator!=(const Gid& rhs) const;
+    bool operator==(const GlobalIdentity& rhs) const;
+    bool operator!=(const GlobalIdentity& rhs) const;
 
-    static Gid& selfGid();
-    static Gid& valueOf(U16 value);
+    static GlobalIdentity& valueOf(const U16 value);
+	
+private:
+    const U16 id;	
 };
 \end{c++}
 \end{leftbar}
 
-静态工厂方法\ascii{valueOf, selfGid}返回的是一个新创建的实例，所以返回值必须设计为值类型，提供\ascii{const}的修饰能够加强编译时的安全性检查。
+静态工厂方法\ascii{valueOf}返回的是一个新创建的实例，所以返回值必须设计为值类型，提供\ascii{const}的修饰能够加强编译时的安全性检查。
 
 正例：
 \begin{leftbar}
@@ -159,11 +161,13 @@ struct GlobalIdentity
 
     bool isValid() const;
 
-    bool operator==(const Gid& rhs) const;
-    bool operator!=(const Gid& rhs) const;
+    bool operator==(const GlobalIdentity& rhs) const;
+    bool operator!=(const GlobalIdentity& rhs) const;
 
-    static const Gid selfGid();
-    static const Gid valueOf(U16 value);
+    static const GlobalIdentity valueOf(U16 value);
+
+private:
+    const U16 id;	
 };
 \end{c++}
 \end{leftbar}
