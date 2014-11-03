@@ -27,8 +27,6 @@
 此处具有查询语义的函数，泛指所有对对象状态未产生副作用的函数。\ascii{const}成员函数往往都以\ascii{get, is, has,
 should}开头。
 
-以\ascii{Ruby}中对\ascii{RubyIdentity}的实现为例\footnote{\ascii{RubyIdentity}在内存中的映虽然仅仅是一个整数而已，依然提倡对它存在的逻辑进行封装，系统因为这些小类的存在变得更加具有可读性和可复用性。}。
-
 反例：
 \begin{leftbar}
 \begin{c++}
@@ -39,11 +37,11 @@ struct Rectangle
     Rectangle(const U8 width, const U8 height);
 
     U16 getArea();
-	U16 getPerimeter();
+    U16 getPerimeter();
 
 private:
     const U8 width;
-	const U8 height;
+    const U8 height;
 };
 \end{c++}
 \end{leftbar}
@@ -62,11 +60,11 @@ struct Rectangle
     Rectangle(const U8 width, const U8 height);
 
     U16 getArea() const;
-	U16 getPerimeter() const;
+    U16 getPerimeter() const;
 
 private:
     const U8 width;
-	const U8 height;
+    const U8 height;
 };
 \end{c++}
 \end{leftbar}
