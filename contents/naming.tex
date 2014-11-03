@@ -192,11 +192,11 @@ ControllerForEfficientStorageOfStrings
 反例：
 \begin{leftbar}
 \begin{c++}
-void MutilEventListener::onEventDown()
+void MutilEventListener::onEventDone()
 {
     for(int index=0; index!=listeners.size(); index++)
     {
-        listeners[index].onEventDown();
+        listeners[index].onEventDone();
     }
 }
 \end{c++}
@@ -211,14 +211,14 @@ void MutilEventListener::onEventDown()
 {
     for(int i=0; i!=listeners.size(); i++)
     {
-        listeners[i].onEventDown();
+        listeners[i].onEventDone();
     }
 }
 \end{c++}
 \end{leftbar}
 
 \begin{regulation}
-程序中每个实体都应该有一个\ascii{Intention-Revealing}名称
+程序中每个实体都应该有一个意图明确\ascii{(Intention-Revealing)}的名称
 \end{regulation}
 
 \begin{leftbar}
@@ -262,7 +262,7 @@ private:
     std::vector<int> states;
 };
 
-using Cells = std::vector<Cell*>;
+using Cells = std::vector<Cell>;
 
 \end{c++}
 \end{leftbar}
@@ -275,11 +275,11 @@ Cells getFlaggedCells() const
 {
     Cells flaggedCells;
 
-    for(auto cell : gameBoard)
+    for(auto &cell : gameBoard)
     { 
         if(cell->isFlagged())
         {
-            flaggedCells.push_back(cell);
+            flaggedCells.push_back(*cell);
         }
     }
 

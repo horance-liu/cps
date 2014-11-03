@@ -189,7 +189,7 @@ String outputDir = ctxt.getOptions().getScratchDir().getAbsolutePath();
 \end{java}
 \end{leftbar}
 
-使用火车失事形容这段代码，非常贴切。如果其调用链如果某一环节出现了问题，则整个调用将出现失败。这类串联的调用违反了\ascii{Demeter}法则，\ascii{ctxt}对象包含了多个选项，每个选项中存在一个临时目录，每个目录都有一个绝对路径，所有的知识都毫无保留地暴露给了用户。
+本例虽然使用\ascii{Java}语言编写，但这不影响对火车失事问题的理解。如果其调用链如果某一环节出现了问题，则整个调用将出现失败。这类串联的调用违反了\ascii{Demeter}法则，\ascii{ctxt}对象包含了多个选项，每个选项中存在一个临时目录，每个目录都有一个绝对路径，所有的知识都毫无保留地暴露给了用户。
 
 仔细分析一下代码，再看看其中一个模块是如何使用这个\ascii{outputDir}的。
 

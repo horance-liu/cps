@@ -6,12 +6,6 @@
 \chapter{代码风格} 
 \label{ch:physical-design}
 
-\begin{content}
-
-系统中所有的代码看起来就好像是被单独一个值得胜任的人编写的\footnote{\ascii{Agile Software Development, Principles, Patterns, and Practices, Robert C. Martin}}。
-
-\end{content}
-
 \section{开发环境}
 
 \begin{content}
@@ -24,6 +18,8 @@
 团队统一使用相同的\ascii{IDE}，并使用统一的代码模板，保持代码风格的一致性
 \end{regulation}
 
+系统中所有的代码看起来就好像是由单独一个值得胜任的人编写的\footnote{\ascii{Agile Software Development, Principles, Patterns, and Practices, Robert C. Martin}}。
+
 \begin{regulation}
 团队统一配置\ascii{IDE}使用等宽字体，不允许使用宋体编程
 \end{regulation}
@@ -34,7 +30,7 @@
 团队统一配置\ascii{IDE}的文件编码格式
 \end{regulation}
 
-例如统一为\ascii{UTF-8}，或\ascii{GBK, GB2312}，抵制使用不同的编码，否则中文会出现乱码的现象。
+例如统一为\ascii{UTF-8}，或\ascii{GBK, GB2312}，不允许使用不同的编码格式，否则中文可能会出现乱码的现象。
 
 \begin{regulation}
 团队统一配置\ascii{IDE}的\ascii{TAB}为相同数目的空格，坚决抵制使用\ascii{TAB}对齐代码\footnote{\ascii{TAB}一般配置为2或4个空格，所有的编辑器都提供了类似的配置接口}
@@ -80,7 +76,7 @@
 这样做可以最大化地实现代码可移植性，避免某些编译器因缺少空行而报告警告信息。
 
 \begin{regulation}
-每一行的代码或注释不得超过\ascii{80}行，否则将其拆分为若干行，并保持适当缩进，保证排版整洁漂亮
+每一行的代码或注释不得超过\ascii{80}列，否则将其拆分为若干行，并保持适当缩进，保证排版整洁漂亮
 \end{regulation}
 
 长表达式、长语句或多或少都存在重复，此时往往是函数提取、概念整合的最佳时机，缩短长表达式、长语句可以极大地缩短阅读代码的时间，并改善代码的可读性。
@@ -89,7 +85,7 @@
 注释符号与注释内容之间要用一个空格分割
 \end{regulation}
 
-某些编译器，当注释内容与注释符号之间没有空格，尤其是中文注释，词法分析错误，导致编译失败\footnote{笔者曾无数次被此类低级错误问题所绊脚过。}。
+当注释内容与注释符号之间没有空格，尤其是中文注释，导致部分编译器词法分析错误，导致编译失败\footnote{笔者曾无数次被此类低级错误问题所绊脚过。}。
 
 反例：
 \begin{leftbar}

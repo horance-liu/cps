@@ -1,6 +1,6 @@
 \begin{savequote}[45mm]
-\ascii{Do the simplest thing that could possibly work.}
-\qauthor{\ascii{- Kent Beck}}
+\ascii{Any fool can write code that a computer can understand. Good programmers write code that humans can understand.}
+\qauthor{\ascii{- Martin Flower}}
 \end{savequote}
 
 \chapter{物理设计} 
@@ -997,102 +997,147 @@ private:
 反例：
 \begin{leftbar}
 \begin{c++}
-// RrmAdmitAction.h
-#include "fw/action/SyncAction.h"
-#include "dcm_inst/UeInstanceHelper.h"
-#include "cell/UeCellObject.h"
-#include "base/Assertions.h"
+// quantity/Quantity.h
+#include <quantity/Amount.h>
 
-template <typename ADMIT_ROLE>
-struct RrmAdmitAction : SyncAction
+template <typename Unit>
+struct Quantity
 {
-    OVERRIDE(Status exec(const TransactionInfo&))
+    Quantity(const Amount amount, const Unit& unit)      
+      : amountInBaseUnit(unit.toAmountInBaseUnit(amount))
+    {}
+    
+    bool operator==(const Quantity& rhs) const
     {
-        ADMIT_ROLE* role = getCurrentCell(trans);
-        DCM_ASSERT_VALID_PTR(role);
-
-        return role->admit(); 
+        return amountInBaseUnit == rhs.amountInBaseUnit;
     }
-}
-\end{c++}
-\end{leftbar}
-
-\begin{leftbar}
-\begin{c++}
-// DrbSetupAdmitAction.h 
-#include "rrm/actions/RrmAdmitAction.h"
-
-struct DrbSetupAdmitAction : RrmAdmitAction<RrmDrbSetupRole> {};
-\end{c++}
-\end{leftbar}
-
-如上的设计，泛型类\ascii{RrmAdmitAction}存在严重的编译时依赖，从而间接地污染了其他的文件。如果我们仔细分析，是有办法解开没有必要的编译时依赖的。
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.8\textwidth]{figures/explict-template-inst}
-  \caption{Explicit Template Instantiated}
-  \label{fig:explict-template-inst}
-\end{figure}
-
-如\refig{explict-template-inst}所示，\ascii{DrbSetupAdmitAction.h}仅仅对\ascii{RrmAdmitAction.h}产生依赖; 特殊地，\ascii{DrbSetupAdmitAction.cpp}没有产生对\ascii{DrbSetupAdmitAction.h}的依赖，相反对\ascii{RrmAdmitAction.tcc}产生了依赖。
-
-当存在很多诸如\ascii{DrbSetupAdmitAction.h}的子类时，编译时依赖将被彻底解除。
-
-正例：
-\begin{leftbar}
-\begin{c++}
-// RrmAdmitAction.h
-#include "fw/action/SyncAction.h"
-
-template <typename ADMIT_ROLE>
-struct RrmAdmitAction : SyncAction
-{
-    OVERRIDE(Status exec(const TransactionInfo&));
+    
+    bool operator!=(const Quantity& rhs) const
+    {
+        return !(*this == rhs);
+    }
+    
+private:
+    const Amount amountInBaseUnit;
 };
 \end{c++}
 \end{leftbar}
 
 \begin{leftbar}
 \begin{c++}
-// RrmAdmitAction.tcc
-#include "rrm/actions/RrmAdmitAction.h"
-#include "dcm_inst/UeInstanceHelper.h"
-#include "cell/UeCellObject.h"
-#include "base/Assertions.h"
+// quantity/Length.h 
+#include "quantity/Quantity.h"
+#include "quantity/LengthUnit.h"
 
-template <typename ADMIT_ROLE>
-Status RrmAdmitAction<ADMIT_ROLE>::exec(const TransactionInfo& trans)
+typedef Quantity<LengthUnit> Length;
+\end{c++}
+\end{leftbar}
+
+\begin{leftbar}
+\begin{c++}
+// quantity/Volume.h 
+#include "quantity/Quantity.h"
+#include "quantity/VolumeUnit.h"
+
+typedef Quantity<VolumeUnit> Volume;
+\end{c++}
+\end{leftbar}
+
+如上的设计，泛型类\ascii{Quantity}的实现都放在了头文件，不稳定的实现细节，例如计算\ascii{amountInBaseUnit}的算法变化等因素，将导致包含\ascii{Length}或\ascii{Volume}的所有源文件都需要重新编译。
+
+更重要的是，因为\ascii{LengthUnit, VolumeUnit}头文件的包含，如果因需求变化需要增加支持的单位，将间接导致了包含\ascii{Length}或\ascii{Volume}的所有源文件也需要重新编译。
+
+如何控制和隔离\ascii{Quantity, LengthUnit, VolumeUnit}变化的蔓延，而避免大部分的客户代码重新编译，从而与客户彻底解偶呢？可以通过显式模板实例化将模板实现从头文件中剥离出去，从而避免了不必要的依赖。
+
+\begin{leftbar}
+\begin{c++}
+// quantity/Quantity.h
+#include <quantity/Amount.h>
+
+template <typename Unit>
+struct Quantity
 {
-    ADMIT_ROLE* role = getCurrentCell(trans);
-    DCM_ASSERT_VALID_PTR(role);
+    Quantity(const Amount amount, const Unit& unit);
+        
+    bool operator==(const Quantity& rhs) const;
+    bool operator!=(const Quantity& rhs) const;
+        
+private:
+    const Amount amountInBaseUnit;
+};
+\end{c++}
+\end{leftbar}
 
-    return role->admit(); 
+\begin{leftbar}
+\begin{c++}
+// quantity/Quantity.tcc
+#include <quantity/Quantity.h>
+
+template <typename Unit>
+Quantity<Unit>::Quantity(const Amount amount, const Unit& unit)      
+  : amountInBaseUnit(unit.toAmountInBaseUnit(amount))
+{}
+    
+template <typename Unit>
+bool Quantity<Unit>::operator==(const Quantity& rhs) const
+{
+    return amountInBaseUnit == rhs.amountInBaseUnit;
+}
+    
+template <typename Unit>
+bool Quantity<Unit>::operator!=(const Quantity& rhs) const
+{
+    return !(*this == rhs);
 }
 \end{c++}
 \end{leftbar}
 
 \begin{leftbar}
 \begin{c++}
-// DrbSetupAdmitAction.h 
-#include "rrm/actions/RrmAdmitAction.h"
+// quantity/Length.h 
+#include "quantity/Quantity.h"
 
-struct RrmDrbSetupRole;
+struct LengthUnit;
 
-struct DrbSetupAdmitAction : RrmAdmitAction<RrmDrbSetupRole> {};
+struct Length : Quantity<LengthUnit> {};
 \end{c++}
 \end{leftbar}
 
 \begin{leftbar}
 \begin{c++}
-// DrbSetupAdmitAction.cpp
-#include "rrm/role/RrmDrbSetupRole.h"
-#include "rrm/actions/RrmAdmitAction.tcc"
+// quantity/Length.cpp
+#include "quantity/Quantity.tcc"
+#include "quantity/LengthUnit.h"
 
-template struct RrmAdmitAction<RrmDrbSetupRole>;
-
+template struct Quantity<LengthUnit>;
 \end{c++}
 \end{leftbar}
+
+\begin{leftbar}
+\begin{c++}
+// quantity/Volume.h 
+#include "quantity/Quantity.h"
+
+struct VolumeUnit;
+struct Volume : Quantity<VolumeUnit> {};
+\end{c++}
+\end{leftbar}
+
+\begin{leftbar}
+\begin{c++}
+// quantity/Volume.h 
+#include "quantity/Quantity.tcc"
+#include "quantity/VolumeUnit.h"
+
+template struct Quantity<VolumeUnit>;
+\end{c++}
+\end{leftbar}
+
+\ascii{Length.h}仅仅对\ascii{Quantity.h}产生依赖; 特殊地，\ascii{Length.cpp}没有产生对\ascii{Length.h}的依赖，相反对\ascii{Quantity.tcc}产生了依赖。
+
+另外，\ascii{Length.h}对\ascii{LengthUnit}的依赖关系也简化为声明依赖，而对其真正的编译时依赖，也控制在模板实例化的时刻，即在\ascii{Length.cpp}内部。
+
+\ascii{LenghtUnit, VolumeUnit的变化}，及其\ascii{Quantity.tcc}实现细节的变化，被完全地控制在\ascii{Length.cpp, Volume.cpp}内部。
 
 \begin{advise}
 子类化优于\ascii{typedef}
@@ -1101,26 +1146,26 @@ template struct RrmAdmitAction<RrmDrbSetupRole>;
 正例：
 \begin{leftbar}
 \begin{c++}
-#include "rrm/actions/RrmAdmitAction.h"
+#include "quantity/Quantity.h"
 
-struct RrmDrbSetupRole;
+struct LengthUnit;
 
-struct DrbSetupAdmitAction : RrmAdmitAction<RrmDrbSetupRole> {};
+struct Length : Quantity<LengthUnit> {};
 \end{c++}
 \end{leftbar}
 
-这样做唯一的理由是，当仅仅出现对\ascii{DrbSetupAdmitAction}的依赖时，前置声明成为可能；此外，你可以重写\ascii{RrmAdmitAction}中的虚函数，实现运行时多态。
+当仅仅对\ascii{amountInBaseUnit}声明产生依赖时，前置声明即可，无需包含整个\ascii{Length}的头文件。另外，如果\ascii{Quantity}存在\ascii{virtual}函数时，\ascii{Length}还有进一步扩展\ascii{Quantity}的可能性，从而使设计提供了更大的灵活性。
 
-但如果实现的是\ascii{typedef}，除了包含头文件之外，别无他法，无疑增加了不必要的编译时依赖。
+如果使用\ascii{typedef}，如果存在对\ascii{Length}的依赖，即使是名字的声明依赖，除了包含头文件之外，别无选择。
 
 反例：
 \begin{leftbar}
 \begin{c++}
-#include "rrm/actions/RrmAdmitAction.h"
+#include "quantity/Quantity.h"
 
-struct RrmDrbSetupRole;
+struct LengthUnit;
 
-typedef RrmAdmitAction<RrmDrbSetupRole> DrbSetupAdmitAction;
+typedef Quantity<LengthUnit> Length;
 \end{c++}
 \end{leftbar}
 

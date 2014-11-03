@@ -27,26 +27,23 @@
 此处具有查询语义的函数，泛指所有对对象状态未产生副作用的函数。\ascii{const}成员函数往往都以\ascii{get, is, has,
 should}开头。
 
-以\ascii{LTE}中对\ascii{RbId}的实现为例\footnote{\ascii{RbId}在内存中的映虽然仅仅是一个整数而已，依然提倡对它存在的逻辑进行封装，系统因为这些小类的存在变得更加具有可读性和可复用性。}。
+以\ascii{Ruby}中对\ascii{RubyIdentity}的实现为例\footnote{\ascii{RubyIdentity}在内存中的映虽然仅仅是一个整数而已，依然提倡对它存在的逻辑进行封装，系统因为这些小类的存在变得更加具有可读性和可复用性。}。
 
 反例：
 \begin{leftbar}
 \begin{c++}
 #include "base/BaseTypes.h"
 
-struct RbId
+struct Rectangle
 {
-    RbId(U8 id);
+    Rectangle(const U8 width, const U8 height);
 
-    bool isSrbId();
-    bool isDrbId();
-    U8 getValue();
-
-    bool operator==(const RbId&);
-    bool operator!=(const RbId&);
+    U16 getArea();
+	U16 getPerimeter();
 
 private:
-    U8 id;
+    const U8 width;
+	const U8 height;
 };
 \end{c++}
 \end{leftbar}
@@ -60,19 +57,16 @@ private:
 \begin{c++}
 #include "base/BaseTypes.h"
 
-struct RbId
+struct Rectangle
 {
-    explicit RbId(U8 id);
+    Rectangle(const U8 width, const U8 height);
 
-    bool isSrbId() const;
-    bool isDrbId() const;
-    U8 getValue() const;
-
-    bool operator==(const RbId&) const;
-    bool operator!=(const RbId&) const;
+    U16 getArea() const;
+	U16 getPerimeter() const;
 
 private:
-    U8 id;
+    const U8 width;
+	const U8 height;
 };
 \end{c++}
 \end{leftbar}
@@ -135,44 +129,40 @@ struct TransactionListener
 反例：
 \begin{leftbar}
 \begin{c++}
-#include "base/Status.h"
 #include "base/BaseTypes.h"
-#include <stddef.h>
 
-struct Gid
+struct GlobalIdentity
 {
-    bool isValid() const;
+    explicit GlobalIdentity(const U16 id);
 
-    Status sendToMe(U16 eventId, const void* msg, size_t size) const;
+    bool isValid() const;
 
     bool operator==(const Gid& rhs) const;
     bool operator!=(const Gid& rhs) const;
 
-    static Gid& getSelfGid();
+    static Gid& selfGid();
     static Gid& valueOf(U16 value);
 };
 \end{c++}
 \end{leftbar}
 
-静态工厂方法\ascii{valueOf, getSelfGid}返回的是一个新创建的实例，所以返回值必须设计为值类型，提供\ascii{const}的修饰能够加强编译时的安全性检查。
+静态工厂方法\ascii{valueOf, selfGid}返回的是一个新创建的实例，所以返回值必须设计为值类型，提供\ascii{const}的修饰能够加强编译时的安全性检查。
 
 正例：
 \begin{leftbar}
 \begin{c++}
-#include "base/Status.h"
 #include "base/BaseTypes.h"
-#include <stddef.h>
 
-struct Gid
+struct GlobalIdentity
 {
-    bool isValid() const;
+    explicit GlobalIdentity(const U16 id);
 
-    Status sendToMe(U16 eventId, const void* msg, size_t size) const;
+    bool isValid() const;
 
     bool operator==(const Gid& rhs) const;
     bool operator!=(const Gid& rhs) const;
 
-    static const Gid getSelfGid();
+    static const Gid selfGid();
     static const Gid valueOf(U16 value);
 };
 \end{c++}
@@ -214,7 +204,7 @@ struct Gid
 
 例如\ascii{Java}的\ascii{JDK}中，\ascii{String}被设计为不可变类，但在诸如字符串需要大量的替换、追加等场景下，性能可能成为关键瓶颈；\ascii{JDK}提供了\ascii{StringBuilder}的可变配套类来解决此类问题。
 
-上例讲解的\ascii{RbId}类也是一种典型的不可变类的设计。
+上例讲解的\ascii{Rectangle}类也是一种典型的不可变类的设计。
 
 \begin{regulation}
 尽量使类的可变性最小化

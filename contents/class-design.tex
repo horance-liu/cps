@@ -252,12 +252,12 @@ Account* AccountFactory::create(const U8 type)
 #include <base/Placement.h>
 #include <radio/Sensor.h>
     
-struct SensorRepositry
+struct SensorRepository
 {
-    SensorRepositry() : num(0)
+    SensorRepository() : num(0)
     {}
     
-    ~SensorRepositry()
+    ~SensorRepository()
     {
         for(U16 i=0; i<num; i++)
         {
