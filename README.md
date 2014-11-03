@@ -45,6 +45,7 @@ Then you should install some missing chinese fonts.
   * __Windows__
  
       * copy the all missing fonts into C:/WINDOWS/Fonts
+      * fc-cache
 
 Generate PDF
 -----------------
@@ -53,8 +54,9 @@ Run make
 View PDF
 -----------------
 output/cpp-programming-style.pdf
+cpp-programming-style.pdf
 
 [MIT License]: http://opensource.org/licenses/mit-license.html 
 [MacTeX.pkg]: http://tug.org/mactex/
 [CTEX-full]: http://www.ctex.org/CTeXDownload
-[https://bitbucket.org/horance/cpp-programming-style]: https://bitbucket.org/horance/cpp-programming-style
+[https://bitbucket.org/horance/cpp-programming-style]: https://bitbucket.org/horance/cpp-programming-style/downloads
