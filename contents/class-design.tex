@@ -39,10 +39,13 @@
 
 基本数据类型包括整形，浮点型，指针，引用等类型。当设计一个含有基本数据类型的成员变量时，必须定义构造函数完成所有成员变量的初始化。
 
-TransData必须实现对基本数据类型的成员变量的初始化，否则行为未定义。至于泛型类型\ascii{T}则要求必须存在默认构造函数，否则编译失败。
+\ascii{TransData}必须实现对基本数据类型的成员变量的初始化，否则行为未定义。至于泛型类型\ascii{T}则要求必须存在默认构造函数，否则编译失败。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={base/TransData.h}]
+#ifndef JLGOUIW12975_VBATQ75656_YRTQKS897564_NVGSSJ
+#define JLGOUIW12975_VBATQ75656_YRTQKS897564_NVGSSJ
+
 template<typename T>
 struct TransData
 {
@@ -66,6 +69,8 @@ TransData<T>::TransData()
   : valid(0), memoed(0), unstable(0), current(0)
 {
 }
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -96,7 +101,10 @@ TransData<T>::TransData()
 \ascii{RAII(Resource acquisition is initialization)}是一种有用的技术，可实现了资源的安全管理功能。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={thread/Lock.h}]
+#ifndef ITUYIYJL9_067251067_MLBNHKEIOYADMPUO0_NVAXZ
+#define ITUYIYJL9_067251067_MLBNHKEIOYADMPUO0_NVAXZ
+
 #include "thread/mutex.h"
 
 struct Lock
@@ -116,13 +124,18 @@ private:
 };
 
 #define SYNCHRONIZED(mutex) Lock mutex##_lock(mutex)
+
+#endif
 \end{c++}
 \end{leftbar}
 
 \ascii{RAII}利用了局部对象的自动销毁的机制，实现资源的自动释放的功能。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={thread/BlockQueue.h}]
+#ifndef TYOQAMGH2975639_NGGQAOZPY96493950_GFRQA0954
+#define TYOQAMGH2975639_NGGQAOZPY96493950_GFRQA0954
+    
 template<typename T>
 void BlockQueue<T>::push(const T& item)
 {
@@ -130,6 +143,8 @@ void BlockQueue<T>::push(const T& item)
 
     // others
 }
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -149,7 +164,10 @@ void BlockQueue<T>::push(const T& item)
 可以引入类\ascii{Placement}，完成内存的预先占用，当延迟初始化发生时，在此\ascii{Placement}的原始内存上调用\ascii{placement new}完成对象的延迟构造；并在此原始内存上提供了一层直观的、人性化的操作接口，从而可以很方便地操作被修饰的类型\ascii{T}对象。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={base/Placement.h}]
+#ifndef LKSDFLKE95794_HGYETQ1240NBAZUTY75444_MGHHHH
+#define LKSDFLKE95794_HGYETQ1240NBAZUTY75444_MGHHHH
+
 #include <string.h>
 #include <new>
 
@@ -196,13 +214,18 @@ private:
         char buff[sizeof(T)];
     }u;
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
 我们分别看两个例子。第一个例子，如果存在两个非\ascii{POD}类型，它们被放在\ascii{union}中，只有在延迟初始化时才能决定其真正的类型的构造。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={money/AccountFactory.h}]
+#ifndef QTA85648888_BFGSE9980666_NNNN_YERQ111_AAAA
+#define QTA85648888_BFGSE9980666_NNNN_YERQ111_AAAA
+
 #include <base/BaseTypes.h>
 
 struct Account;
@@ -211,11 +234,13 @@ struct AccountFactory
 {
     static Account* create(const U8 type);
 };
+
+#endif
 \end{c++}    
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={money/AccountFactory.cpp}]
 #include <money/LocalAccount.h>
 #include <money/RemoteAccount.h>
 #include <new>
@@ -248,7 +273,10 @@ Account* AccountFactory::create(const U8 type)
 如果一个类包含一个类类型的数组，除非提供数组元素类型的默认构造函数，否则编译失败。使用\ascii{Placement}预先占用数组所需的内存，再在合适的时机再进行延迟初始化，则可以避免了数组元素的默认构造，提升了效率}。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={sensor/SensorRepository.h}]
+#ifndef MMMM_66310_JFLA98301OQG7492_MFFAZXXX_RREE
+#define MMMM_66310_JFLA98301OQG7492_MFFAZXXX_RREE
+    
 #include <base/Placement.h>
 #include <radio/Sensor.h>
     
@@ -279,6 +307,8 @@ private:
     U16 num;
     Placement<Sensor> sensors[MAX_NUM_SENSOR];
 };
+
+#endif
 \end{c++}    
 \end{leftbar}
 
@@ -291,7 +321,10 @@ private:
 如果公开了内部成员变量，则违背了信息隐藏机制，这是一种典型的坏味道。相反地，当遇到需要操作遗留系统中\clang{}语言的结构体，需要对其进行封装，并提供相应的成员函数，让其更加符合面向对象的思维。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={base/StructWrapper.h}]
+#ifndef IIU11905749_BVFATQ1_NGFJE8563MCVYYYQQQ_NFG666
+#define IIU11905749_BVFATQ1_NGFJE8563MCVYYYQQQ_NFG666
+    
 template <typename From, typename To>
 struct StructWrapper : protected From
 {
@@ -307,14 +340,16 @@ struct StructWrapper : protected From
 };
 
 #define STRUCT_WRAPPER(To, From) strict To : StructWrapper<From, To>
+
+#endif
 \end{c++}
 \end{leftbar}
 
 使用\ascii{StructWrapper}提供的静态工厂方法\ascii{by}，可方便地实现\clang{}结构体转变为封装了的\cpp{}类。
 
-\begin{regulation}
-遇到多个构造器参数时考虑用构建器
-\end{regulation}
+%\begin{regulation}
+%遇到多个构造器参数时考虑用构建器
+%\end{regulation}
 
 \begin{regulation}
 考虑使用静态工厂方法代替构造函数
@@ -336,7 +371,10 @@ struct StructWrapper : protected From
 在面对这个问题时，抽象出了\ascii{UsdUnit}类，并提供两个\ascii{static factory method}，以实现对\ascii{UsdUnit}实例生成的控制，并通过宏定义改善了\ascii{API}的可读性和方便性。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={money/UsdUnit.h}]
+#ifndef GGG612990097_BSAWQQQQ_NFGGG_VXXZZZ_76555
+#define GGG612990097_BSAWQQQQ_NFGGG_VXXZZZ_76555
+
 #include "base/Keywords.h"
 #include "money/Amount.h"
 #include <ostream>
@@ -351,11 +389,13 @@ DEFINE_ROLE(UsdUnit)
 
 #define DOLLAR UsdUnit::dollar()
 #define CENT   UsdUnit::cent()
+
+#endif
 \end{c++}
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={money/UsdUnit.cpp}]
 #include "money/UsdUnit.h"
 
 namespace
@@ -396,7 +436,10 @@ DEF_USD_UNIT(cent)
 此处提供了一个\ascii{String}的工具类，为了保证禁止生成实例的约束，提供了一个故意没有实现的默认构造函数，从而保证了编译时的安全性。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={util/StringUtil.h}]
+#ifndef UURY08453HGYT6574_NBBVGA_EYQIGYFH_GWQAMGY
+#define UURY08453HGYT6574_NBBVGA_EYQIGYFH_GWQAMGY
+
 #include <vector>
 #include <string>
 
@@ -411,6 +454,8 @@ struct StringUtil
 private:
     StringUtil();
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -434,7 +479,10 @@ StringUtil().split("1,2,3", ',');
 为了防止其他人错误地进行值拷贝，常常需要禁止其复制和赋值行为，存在三种典型的技术：
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={base/Uncloneable.h}]
+#ifndef CCCPLSUE746HNV_NGGWTEEEYYY11857664_NFFFGGG
+#define CCCPLSUE746HNV_NGGWTEEEYYY11857664_NFFFGGG
+
 #define DISALLOW_COPY(classname) \
 private:                         \
     className(const className&)
@@ -446,13 +494,18 @@ private:                           \
 #define DISALLOW_COPY_AND_ASSIGN(className) \
     DISALLOW_COPY(classname)                \
     DISALLOW_ASSIGN(classname)
+    
+#endif
 \end{c++}
 \end{leftbar}
 
 或\ascii{private}继承\ascii{Uncloneable}类：
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={base/Uncloneable.h}]
+#ifndef CCCPLSUE746HNV_NGGWTEEEYYY11857664_NFFFGGG
+#define CCCPLSUE746HNV_NGGWTEEEYYY11857664_NFFFGGG
+
 class Uncloneable
 {
 protected:
@@ -463,17 +516,24 @@ private:
     Uncloneable(const Uncloneable&);
     Uncloneable& operator=(const Uncloneable&);
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
 在\cpp{}\ascii{11}中，可以显式地\ascii{delete}掉相应的函数：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={cppunit/Test.h}]
+#ifndef UTYWO_TETQHBF774010_NVBDAUTHHF_HH1HHJFTUT_144
+#define UTYWO_TETQHBF774010_NVBDAUTHHF_HH1HHJFTUT_144
+    
 struct Test
 {
     Test(const Test&) = delete;
     Test& operator=(const Test&) = delete;
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -504,7 +564,11 @@ struct Test
 可以通过\ascii{DEFINE\_ROLE}的宏定义来实现对接口的定义，从而可以消除子类对虚拟析构函数的重复实现。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={base/Role.h}]
+#ifndef HF95EF112_D6C6_4DB0_8C1A_BE5A6CF8E3F1
+#define HF95EF112_D6C6_4DB0_8C1A_BE5A6CF8E3F1
+#include <base/Keywords.h>
+
 namespace details
 {
    template <typename T>
@@ -515,15 +579,24 @@ namespace details
 }
 
 #define DEFINE_ROLE(type) struct type : ::details::Role<type>
+
+#endif
 \end{c++}
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}
-DEFINE_ROLE(Runnable)
+\begin{c++}[caption={thread/Callable.h}]
+#ifndef NVBB1QQAT1838_BZZZAAAIIRUUYWWW887440_HHFF_123
+#define NVBB1QQAT1838_BZZZAAAIIRUUYWWW887440_HHFF_123
+
+#include "base/Role.h"
+
+DEFINE_ROLE(Callable)
 {
-    ABSTRACT(void run());
-}
+    ABSTRACT(void call());
+};
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -592,7 +665,10 @@ DEFINE_ROLE(Runnable)
 在子类中改写虚函数时，提供显式的\ascii{override}将改善代码的可读性，更重要的是增强了编译时的安全性检查。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={cppunit/TestDecorator.h}]
+#ifndef NCQEAY2220098666TTRRWWO_WWT2264449880MM_SDQAA
+#define NCQEAY2220098666TTRRWWO_WWT2264449880MM_SDQAA
+
 #include <cppunit/core/Test.h>
 
 struct TestDecorator : Test
@@ -608,6 +684,8 @@ private:
 private:
     Test& test;
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -667,7 +745,7 @@ private:
 例如\ascii{std::sort}中实现的排序，使用\ascii{Comparator}方便用户定制比较规则。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={标准库std::sort}]
 template<typename Iterator, typename Comparator>
 void sort(Iterator first, Iterator last, Comparator comp);
 \end{c++}

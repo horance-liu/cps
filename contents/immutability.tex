@@ -29,7 +29,10 @@ should}开头。
 
 反例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={math/Rectangle.h}]
+#ifndef EWRIUN9037_NVHD6452_JKLSDFUIE7562_HGYE
+#define EWRIUN9037_NVHD6452_JKLSDFUIE7562_HGYE
+
 #include "base/BaseTypes.h"
 
 struct Rectangle
@@ -43,6 +46,8 @@ private:
     const U8 width;
     const U8 height;
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -52,7 +57,10 @@ private:
 
 正例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={math/Rectangle.h}]
+#ifndef EWRIUN9037_NVHD6452_JKLSDFUIE7562_HGYE
+#define EWRIUN9037_NVHD6452_JKLSDFUIE7562_HGYE
+
 #include "base/BaseTypes.h"
 
 struct Rectangle
@@ -66,6 +74,8 @@ private:
     const U8 width;
     const U8 height;
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -76,7 +86,7 @@ private:
 编译器只能保证\ascii{const}成员函数修改成员变量时提示错误，而未对修改全局变量，类的静态变量的情况进行检查，应杜绝此类情况的发生。
 
 \begin{regulation}
-以\ascii{pass-by-reference-to-const}替代\ascii{pass-by-value}，以改善性能，并避免切割问题。
+以\ascii{pass-by-reference-to-const}替代\ascii{pass-by-value}，以改善性能，并避免切割问题
 \end{regulation}
 
 虽然我们不提倡进行过早的优化，但也绝不提倡不成熟的劣化。\ascii{pass-by-reference-to-const}就是此句名言最好的一个例子。
@@ -91,7 +101,10 @@ Beck}的著作\ascii{《实现模式》}}，改善了\ascii{API}的美感。
 
 反例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={trans-dsl/listener/TransactionListener.h}]
+#ifndef UTJKLFJS_467867_NBHD83562_HETRIO_75649
+#define UTJKLFJS_467867_NBHD83562_HETRIO_75649
+
 #include "base/Status.h"
 #include "trans-dsl/concept/ActionId.h"
 
@@ -102,12 +115,17 @@ struct TransactionListener
     virtual Status onDone(const TransactionInfo&, const ActionId&, const Status&) 
     {} 
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
 正例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={trans-dsl/listener/TransactionListener.h}]
+#ifndef UTJKLFJS_467867_NBHD83562_HETRIO_75649
+#define UTJKLFJS_467867_NBHD83562_HETRIO_75649
+
 #include "base/Status.h"
 #include "trans-dsl/concept/ActionId.h"
 
@@ -117,6 +135,8 @@ struct TransactionListener
 {
     virtual Status onDone(const TransactionInfo&, const ActionId, const Status) {}
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -126,7 +146,10 @@ struct TransactionListener
 
 反例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={domain/GlobalIdentity.h}]
+#ifndef UTYKLFLDQX74697_KJTUIONQA_3895903_NBFIT
+#define UTYKLFLDQX74697_KJTUIONQA_3895903_NBFIT
+
 #include "base/BaseTypes.h"
 
 struct GlobalIdentity
@@ -143,6 +166,8 @@ struct GlobalIdentity
 private:
     const U16 id;	
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -150,7 +175,10 @@ private:
 
 正例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={domain/GlobalIdentity.h}]
+#ifndef UTYKLFLDQX74697_KJTUIONQA_3895903_NBFIT
+#define UTYKLFLDQX74697_KJTUIONQA_3895903_NBFIT
+
 #include "base/BaseTypes.h"
 
 struct GlobalIdentity
@@ -167,6 +195,8 @@ struct GlobalIdentity
 private:
     const U16 id;	
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -183,7 +213,7 @@ private:
 \begin{content}
 
 \begin{advise}
-鼓励设计\ascii{Immutable Class}表达\ascii{Value Object}的语义
+鼓励设计不可变类\ascii{(Immutable Class)}表达值对象\ascii{(Value Object)}的语义
 \end{advise}
 
 不可变类的每一个实例在创建的时候就包含了所有必要的信息，其对象在整个生命周期中都不会发生变化。不可变类具有如下几方面的优势：

@@ -1,0 +1,154 @@
+\chapter{前言} 
+\label{ch:preface}
+
+\begin{content}
+
+\cpp{} \ascii{Programming Style}是一份关于\cpp{}的代码规范，为\cpp{}程序员提供编码的参考和建议。
+
+规范总结了之前实践中遇到的一些宝贵的经验教训，并且很多规则、原则和建议都摘自社区软件设计大师的论文、报告、书籍、博客，并引用了一些\ascii{open source}典型源代码。
+
+由于时间的仓促，本规范只归纳了部分的典型\cpp{}原则、规则和意见。如果本规范有您不清楚的地方，请查阅附录中的参考文献。
+
+\end{content}
+
+\section*{定义}
+
+\begin{content}
+
+\begin{table}[!htb]
+\resizebox{0.95\textwidth}{!} {
+\begin{tabular*}{1.2\textwidth}{@{}ll@{}}
+\toprule
+\ascii{约定} & \ascii{说明} \\
+\midrule
+\ascii{原则}  & 坚持遵守的指导思想 \\
+\ascii{规则} & 必须遵守的约定 \\ 
+\ascii{建议} & 可以考虑的约定 \\ 
+\ascii{正例} & 原则、规则、建议所给出的正确例子 \\ 
+\ascii{反例} & 原则、规则、建议所给出的错误例子 \\ 
+\bottomrule
+\end{tabular*}
+}
+\caption{规范约定}
+\label{tbl:regulation-tbl}
+\end{table}
+
+\end{content}
+
+\section*{宏}
+
+\begin{content}
+
+为了提高代码的表现力，规范中使用了一部分实用的宏定义。
+
+\begin{leftbar}
+\begin{c++}[caption={base/Default.h}]
+#ifndef GKOQWPRT_1038935_NCVBNMZHJS_8909603
+#define GKOQWPRT_1038935_NCVBNMZHJS_8909603
+
+namespace details
+{
+   template <typename T>
+   struct DefaultValue
+   {
+      static T value()
+      {
+         return T();
+      }
+   };
+
+   template <typename T>
+   struct DefaultValue<T*>
+   {
+       static T* value()
+       {
+           return 0;
+       }
+   };
+
+   template <typename T>
+   struct DefaultValue<const T*>
+   {
+       static T* value()
+       {
+           return 0;
+       }
+   };
+
+   template <>
+   struct DefaultValue<void>
+   {
+      static void value()
+      {
+      }
+   };
+}
+
+#define DEFAULT(type, method)  \
+    virtual type method { return ::details::DefaultValue<type>::value(); }
+
+#endif
+\end{c++}
+\end{leftbar}
+
+\ascii{DEFAULT}对于定义空实现的\ascii{virtual}函数非常方便。需要注意的是，所有计算都是发生在编译时的。
+
+\begin{leftbar}
+\begin{c++}[caption={base/Keywords.h}]
+#ifndef H16274882_9153_4DB2_A2E2_F23D4CCB9381
+#define H16274882_9153_4DB2_A2E2_F23D4CCB9381
+
+#include "base/Config.h"
+#include "base/Default.h"
+
+#define ABSTRACT(...) virtual __VA_ARGS__ = 0
+
+#if __SUPPORT_VIRTUAL_OVERRIDE
+#   define OVERRIDE(...) virtual __VA_ARGS__ override
+#else
+#   define OVERRIDE(...) virtual __VA_ARGS__
+#endif
+
+#define EXTENDS(...) , ##__VA_ARGS__
+#define IMPLEMENTS(...) EXTENDS(__VA_ARGS__)
+
+#endif
+\end{c++}
+\end{leftbar}
+
+\ascii{Config.h}提供了编译器支持\cpp{}\ascii{11}特性的配置信息。\ascii{ABSTRACT, OVERRIDE, EXTENDS, IMPLEMENTS}等关键字，使得\ascii{Java}程序员也能看懂规范中\cpp{}的代码，也极大地改善了\cpp{}的表现力。
+
+\begin{leftbar}
+\begin{c++}[caption={base/Role.h}]
+#ifndef HF95EF112_D6C6_4DB0_8C1A_BE5A6CF8E3F1
+#define HF95EF112_D6C6_4DB0_8C1A_BE5A6CF8E3F1
+#include <base/Keywords.h>
+
+namespace details
+{
+   template <typename T>
+   struct Role
+   {
+      virtual ~Role() {}
+   };
+}
+
+#define DEFINE_ROLE(type) struct type : ::details::Role<type>
+
+#endif
+\end{c++}
+\end{leftbar}
+
+通过\ascii{DEFINE\_ROLE}的宏定义来实现对接口的定义，从而可以消除子类对虚拟析构函数的重复实现。
+
+\end{content}
+
+\section*{致谢}
+
+\begin{content}
+
+本规范主要由刘光聪编写，并由如下同事：黄新文，刘苏建，王妮，曾亮亮，李亚军，李永顺，及其\ascii{LTE}开发部的部分同事共同参与审阅、评审、修改和代码走查，并提出了非常好的修改意见。
+
+另外深圳\ascii{LTE}开发部的部分同事，西安基带部的王立平、李小海也参与了规范的评审，并提出了宝贵的意见。
+
+\end{content}

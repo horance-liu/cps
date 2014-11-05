@@ -25,7 +25,7 @@
 
 我们推荐团队使用下文中任意一种命名风格，但如果由于历史遗留原因导致革新非常困难，而无法采用新的命名规范，团队依然要保持统一的命名规范，避免出现多种命名风格。
 
-\begin{table}[H]
+\begin{table}[!htb]
 \resizebox{0.95\textwidth}{!} {
 \begin{tabular*}{1.2\textwidth}{@{}ll@{}}
 \toprule
@@ -46,7 +46,7 @@
 
 还有一种命名风格与上一种风格类同，只是成员函数/函数都以大写开头的驼峰命名。
 
-\begin{table}[H]
+\begin{table}[!htb]
 \resizebox{0.95\textwidth}{!} {
 \begin{tabular*}{1.2\textwidth}{@{}ll@{}}
 \toprule
@@ -68,7 +68,7 @@
 
 第三种命名风格，主要体现在标准库或\ascii{Boost}准标准库社区，其规则非常简单，下划线分割的全小写，或下划线分割的全大写。
 
-\begin{table}[H]
+\begin{table}[!htb]
 \resizebox{0.95\textwidth}{!} {
 \begin{tabular*}{1.2\textwidth}{@{}ll@{}}
 \toprule
@@ -91,11 +91,13 @@
 绝不使用汉语拼音命名
 \end{regulation}
 
+必须实用标准的英语命名程序实体，不允许实用汉语拼音。
+
 \begin{regulation}
 类名应该是名词或名词短语；接口可以是形容词; 方法名应该是动词或动词短语
 \end{regulation}
 
-\begin{table}[H]
+\begin{table}[!htb]
 \resizebox{0.95\textwidth}{!} {
 \begin{tabular*}{1.2\textwidth}{@{}ll@{}}
 \toprule
@@ -112,15 +114,38 @@
 
 接口可以是形容词，最为常见的就是定义能力接口，即以\ascii{-able}结尾。
 
+反例：
+\begin{leftbar}
+\begin{c++}[caption={thread/Runnable.h}]
+#ifndef LJKYIUERUIQ09857983_NVHKJKHA86100494_JGYQPIPWNC
+#define LJKYIUERUIQ09857983_NVHKJKHA86100494_JGYQPIPWNC
+
+#include "base/Keywords.h"
+
+// 接口必须是形容词或名词，不允许是动词
+DEFINE_ROLE(Run)
+{
+    ABSTRACT(void run());
+};
+
+#endif
+\end{c++}
+\end{leftbar}
+
 正例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={thread/Runnable.h}]
+#ifndef LJKYIUERUIQ09857983_NVHKJKHA86100494_JGYQPIPWNC
+#define LJKYIUERUIQ09857983_NVHKJKHA86100494_JGYQPIPWNC
+
 #include "base/Keywords.h"
 
 DEFINE_ROLE(Runnable)
 {
     ABSTRACT(void run());
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -156,7 +181,7 @@ bool userIsAuthenticated = true;
 
 如\reftbl{colorful-words}所示，同一概念是有很多种表达方式的。
 
-\begin{table}[H]
+\begin{table}[!htb]
 \resizebox{0.95\textwidth}{!} {
 \begin{tabular*}{1.2\textwidth}{@{}ll@{}}
 \toprule
@@ -169,7 +194,7 @@ bool userIsAuthenticated = true;
 \bottomrule
 \end{tabular*}
 }
-\caption{Colorfull Words}
+\caption{丰富的词汇}
 \label{tbl:colorful-words}
 \end{table}
 
@@ -191,7 +216,7 @@ ControllerForEfficientStorageOfStrings
 
 反例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption="trans-dsl/listener/MutilEventListener.cpp"]
 void MutilEventListener::onEventDone()
 {
     for(int index=0; index!=listeners.size(); index++)
@@ -206,7 +231,7 @@ void MutilEventListener::onEventDone()
 
 正例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption="trans-dsl/listener/MutilEventListener.cpp"]
 void MutilEventListener::onEventDown()
 {
     for(int i=0; i!=listeners.size(); i++)
@@ -221,6 +246,7 @@ void MutilEventListener::onEventDown()
 程序中每个实体都应该有一个意图明确\ascii{(Intention-Revealing)}的名称
 \end{regulation}
 
+反例：
 \begin{leftbar}
 \begin{c++}
 vector<vector<int> > getThem() 
@@ -250,6 +276,7 @@ vector<vector<int> > getThem()
 
 换一个好名字之后，并对数据结构进行了简单的封装。
 
+正例：
 \begin{leftbar}
 \begin{c++}
 #include <vector>
@@ -300,7 +327,7 @@ Cells getFlaggedCells() const
 
 如\reftbl{redundant-words}所示，消除冗余的噪声，将得到一个更加直观、更漂亮的名字。
 
-\begin{table}[H]
+\begin{table}[!htb]
 \resizebox{0.95\textwidth}{!} {
 \begin{tabular*}{1.2\textwidth}{@{}ll@{}}
 \toprule
@@ -361,8 +388,12 @@ of}，你在使用静态工厂方法。领域内的命名风格，让领域内�
 
 在接口前增加\ascii{I\_}，在类前增加\ascii{C\_}，同样完全没有必要，它只能对重构带来阻力，百害而无一利。
 
+反例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={trans-dsl/sched/IAction.h}]
+#ifndef NVCHKJSD903085_JGOIUUE906894_VBKSJKJA075774
+#define NVCHKJSD903085_JGOIUUE906894_VBKSJKJA075774    
+
 #include "base/Keywords.h"
 #include "base/Status.h"
 
@@ -372,6 +403,8 @@ DEFINE_ROLE(IAction)
 {
     ABSTRACT(Status exec(const TransactionInfo&));
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 

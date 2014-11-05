@@ -38,7 +38,7 @@
 %%%% 正文部分
 
 \begin{document}
-
+\frontmatter
 \pagestyle{empty}
 
 %%自定义封面
@@ -48,8 +48,13 @@
 \def\orgnization{\ascii{ZTE Corporation Copyright \textcopyright 2014}}
 
 \input{style/title}
-%\myclearpage
-%\myclearpage
+\myclearpage
+
+\listoftables
+\myclearpage
+
+\input{contents/preface}
+\myclearpage
 
 \tableofcontents
 \myclearpage
@@ -61,6 +66,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%开始正文，页面计数从正文开始
+\mainmatter
 \setcounter{page}{1}
 \pagestyle{fancy}
 
@@ -74,10 +80,8 @@
 \input{contents/clean-test}
 
 %%%%%%%%%%%%%%%%%%%％%%
+%\backmatter
 %\listoffigures
-%\myclearpage
-
-%\listoftables
 %\myclearpage
 
 %\include{contents/appendix}

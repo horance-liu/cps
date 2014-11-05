@@ -1,6 +1,9 @@
 %%%% 设置listings宏包用来粘贴源代码
 %% 方便粘贴源代码，部分代码高亮功能
 \usepackage{listings}
+\usepackage{color}
+
+\DeclareCaptionFont{red}{\color{red}}
   
 %% 所要粘贴代码的编程语言
 \lstloadlanguages{{[LaTeX]TeX}, {[ISO]C++}, {Java}, {Ruby}}
@@ -35,7 +38,7 @@ belowcaptionskip=1em
    prebreak=\textbackslash,
    breakindent=1em,
    keywordstyle=\bfseries, %% 关键字高亮
-   morekeywords={alignas, alignof, char16_t, char32_t, constexpr, decltype, noexcept, nullptr, static_assert, thread_local, OVERRIDE, INTERFACE, ABSTRACT, ROLE, USE_ROLE}
+   morekeywords={alignas, alignof, char16_t, char32_t, constexpr, decltype, noexcept, nullptr, static_assert, thread_local, OVERRIDE, INTERFACE, ABSTRACT, DEFINE_ROLE, ROLE, HAS_ROLE, USE_ROLE}
    style=numbers,
    %frame=leftline,                     %% 给代码加框
    %framerule=2pt,
@@ -46,6 +49,9 @@ belowcaptionskip=1em
   {\setstretch{1}
   \lstset{style=C++, #1}}
   {}
+
+%\captionsetup[lstlisting]{textfont=red}
+%{labelfont=bf, singlelinecheck=off, labelsep=space, textfont=red}
 
 \lstdefinestyle{Java}{
    language=Java,

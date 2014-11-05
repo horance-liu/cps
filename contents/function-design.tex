@@ -50,7 +50,7 @@
 下例虽然以\ascii{Java}为例，但重点没有偏离，规则同样适用于\clang{}/cpp{}。
 
 \begin{leftbar}
-\begin{java}
+\begin{java}[caption={java.util.List}]
 public class List<E> {
    public void add(E element) {
       if (!readOnly) {
@@ -72,7 +72,7 @@ public class List<E> {
 提取函数之后，使算法的骨骼显而易见。
 
 \begin{leftbar}
-\begin{java}
+\begin{java}[caption={java.util.List}]
 public class List<E> {
    public void add(E element) {
       if (readOnly)
@@ -142,7 +142,10 @@ Thermometer::newInstance(true);
 重载是一种编译时的多态。只要函数具有相同名字，但参数数目，类型不同，即为重载。但滥用往往会误导使用\ascii{API}的程序员，尤其在具有相同参数数目的重载方法时，程序员需要清晰地知道所有类型的隐式转换规则，即其重载匹配规则，这无疑是一种没必要的负担。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={io/ObjectOutputStream.h}]
+#ifndef JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
+#define JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
+
 struct ObjectOutputStream
 {
     void write(bool);
@@ -153,13 +156,18 @@ struct ObjectOutputStream
     void write(float);
     void write(double);
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
 面对疑难的时候，抛弃重载往往能得到更不容易犯错的解决方案。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={io/ObjectOutputStream.h}]
+#ifndef JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
+#define JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
+
 struct ObjectOutputStream
 {
     void writeBool(bool);
@@ -170,6 +178,8 @@ struct ObjectOutputStream
     void writeFloat(float);
     void writeDouble(double);
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
@@ -183,6 +193,7 @@ struct ObjectOutputStream
 避免实现火车失事的代码
 \end{regulation}
 
+反例：
 \begin{leftbar}
 \begin{java}
 String outputDir = ctxt.getOptions().getScratchDir().getAbsolutePath();
@@ -202,6 +213,7 @@ BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outFile
 
 所有的一切都是为了创建指定名称的临时文件，理想的实现应该将所有本应该隐藏的知识归并到\ascii{ctxt}中实现。
 
+正例：
 \begin{leftbar}
 \begin{c++}
 BufferedOutputStream bos = ctxt.createScratchFileStream(className);
@@ -245,7 +257,10 @@ BufferedOutputStream bos = ctxt.createScratchFileStream(className);
 \ascii{AutoMsg}也是一个较为经典的例子，\ascii{AutoMsg}将消息对象的构造搬迁到了堆上进行初始化，从而避免了由于消息过大而导致的栈溢出的风险。当函数调用出栈时，内存自动释放。
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={base/AutoMsg.h}]
+#ifndef AA_TTYSFLNVHSL_375BBGGH7754420010MHHSLJEROLJKD
+#define AA_TTYSFLNVHSL_375BBGGH7754420010MHHSLJEROLJKD
+
 template <typename Msg>
 struct AutoMsg
 {
@@ -270,11 +285,16 @@ struct AutoMsg
 private:
     Msg* msg;
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={money/RemoteAccount.h}]
+#ifndef QLALK_YRUUUTIIT00475_NVBBAKKF_6455BCHKAK_YQQAMGH
+#define QLALK_YRUUUTIIT00475_NVBBAKKF_6455BCHKAK_YQQAMGH
+
 #include <money/domain/Account.h>
 #include <money/msg/TransMoneyMsg.h>
 #include <base/Asserter.h>
@@ -302,6 +322,8 @@ private:
         // no implement
     }    
 };
+
+#endif
 \end{c++}
 \end{leftbar}
 
