@@ -30,7 +30,19 @@
 
 \input{style/coding}
 
+\usepackage[
+  placement=center,
+  angle=45,
+  scale=6,
+  color=black!40,
+  %hshift=60,
+  %vshift=-5
+]{background}
+
+\backgroundsetup{contents={ZTE Confidential}}
+
 \newcommand{\myclearpage}{\clearpage{\pagestyle{empty}\cleardoublepage}}
+
 %%%% 导言区结束
 %%%%%%%%------------------------------------------------------------------------
 
@@ -42,7 +54,7 @@
 \pagestyle{empty}
 
 %%自定义封面
-\def\titlename{\ascii{C++ Programming Style}}
+\def\titlename{C++ Programming Style}
 \def\subtitle{\ascii{Guidelines, Rules, and Patterns}}
 \def\authors{LTE开发部}
 \def\orgnization{\ascii{ZTE Corporation Copyright \textcopyright 2014}}
@@ -50,13 +62,10 @@
 \input{style/title}
 \myclearpage
 
-\listoftables
+\tableofcontents
 \myclearpage
 
 \input{contents/preface}
-\myclearpage
-
-\tableofcontents
 \myclearpage
 
 \def\thelstlisting{\thechapter-\arabic{lstlisting}}
@@ -80,9 +89,12 @@
 \input{contents/clean-test}
 
 %%%%%%%%%%%%%%%%%%%％%%
-%\backmatter
+\backmatter
 %\listoffigures
 %\myclearpage
+
+\listoftables
+\myclearpage
 
 %\include{contents/appendix}
 
