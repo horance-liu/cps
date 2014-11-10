@@ -148,9 +148,9 @@ void BlockQueue<T>::push(const T& item)
 \end{c++}
 \end{leftbar}
 
-\begin{regulation}
+\begin{advise}
 在特定场景下延迟初始化对象
-\end{regulation}
+\end{advise}
 
 在延迟初始化之前，必须预先占有对象所需要的原始内存空间。但被延迟的对象类型如果在如下两种场景，则无法预先占有原始内存。
 
@@ -351,9 +351,9 @@ struct StructWrapper : protected From
 %遇到多个构造器参数时考虑用构建器
 %\end{regulation}
 
-\begin{regulation}
+\begin{advise}
 考虑使用静态工厂方法代替构造函数
-\end{regulation}
+\end{advise}
 
 \ascii{static factory method}具有很多优势，
 \begin{enum}
@@ -429,9 +429,9 @@ DEF_USD_UNIT(cent)
 \end{c++}
 \end{leftbar}
 
-\begin{regulation}
+\begin{advise}
 通过私有构造函数强化不可实例化能力
-\end{regulation}
+\end{advise}
 
 此处提供了一个\ascii{String}的工具类，为了保证禁止生成实例的约束，提供了一个故意没有实现的默认构造函数，从而保证了编译时的安全性。
 
@@ -472,9 +472,9 @@ StringUtil().split("1,2,3", ',');
 
 是否需要将复制构造函数或拷贝赋值函数显式地声明为\ascii{private}，道理是一样的。
 
-\begin{regulation}
+\begin{advise}
 当一个类确定需要禁止被复制和赋值时，应明确地拒绝
-\end{regulation}
+\end{advise}
 
 为了防止其他人错误地进行值拷贝，常常需要禁止其复制和赋值行为，存在三种典型的技术：
 

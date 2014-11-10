@@ -10,9 +10,9 @@
 
 \begin{content}
 
-\begin{regulation}
+\begin{advise}
 \ascii{YODA Notation}已经是过去时
-\end{regulation}
+\end{advise}
 
 \begin{leftbar}
 \begin{c++}
@@ -67,7 +67,7 @@ if (ptr == NULL)
 反例：
 \begin{leftbar}
 \begin{c++}
-if (ptr == NULL)
+if (NULL == ptr)
 \end{c++}
 \end{leftbar}
 
@@ -235,18 +235,5 @@ for (auto &entry : addressBook)
 }
 \end{c++}
 \end{leftbar}
-
-同样的规则也使用与其他常见的情况，例如\ascii{if}语句，简化空指针的判断，简洁有效。
-
-\begin{leftbar}
-\begin{c++}
-if (PaymentInfo* info = database.readPaymentInfo()) 
-{
-    std::cout << "User paid: " << info->amount() << std::endl;
-}
-\end{c++}
-\end{leftbar}
-
-但也有人对于\ascii{if}语句这样的用法持反对态度，因为他们害怕这样做更容易出错。但在最坏的情况下，即使误写成了\ascii{==}，也只是编译时错误。
 
 \end{content}

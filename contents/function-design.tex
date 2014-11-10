@@ -117,23 +117,21 @@ public class List<E> {
 对于\ascii{bool}参数，优先使用两个元素的枚举类型
 \end{regulation}
 
-从直观上，
-
-\begin{leftbar}
-\begin{c++}
-Thermometer::newInstance(CELSIUS);
-\end{c++}
-\end{leftbar}
-
-要比
-
+反例：
 \begin{leftbar}
 \begin{c++}
 Thermometer::newInstance(true);
 \end{c++}
 \end{leftbar}
 
-容易理解得多，但牺牲了一点点代码复用性。对于这个问题，可以通过内部的\ascii{private}函数来解决这个问题。也就是说，带\ascii{bool}参数的函数依然存在，只不过被\ascii{private}，以便实现对枚举参数的函数的代码复用。
+正例：
+\begin{leftbar}
+\begin{c++}
+Thermometer::newInstance(CELSIUS);
+\end{c++}
+\end{leftbar}
+
+可以通过内部的\ascii{private}函数来解决代码复用的问题。也就是说，带\ascii{bool}参数的函数依然存在，只不过被\ascii{private}，以便实现对枚举参数的函数的代码复用。
 
 \begin{regulation}
 永远不要导出具有相同参数数目的的重载方法
