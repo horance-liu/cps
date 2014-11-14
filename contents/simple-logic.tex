@@ -55,7 +55,7 @@ if (ptr = NULL)
 \end{c++}
 \end{leftbar}
 
-幸运的是，现代编译器对此类误用通常报告警告信息；此外如果保持\ascii{TDD}开发节奏，小步前进，此类低级错误很难逃出我们的法眼。
+幸运的是，现代编译器对此类误用通常报告警告信息；如果保持\ascii{TDD}开发节奏，小步前进，此类低级错误很难逃出测试的法网。
 
 正例：
 \begin{leftbar}
@@ -127,7 +127,7 @@ else
 反例：
 \begin{leftbar}
 \begin{c++}
-bool exist = erabs.contains(ErabId(2)) ? true : false;
+bool exist = nodes.contains(NodeId(2)) ? true : false;
 if(exist == true)
 {
     ...
@@ -138,7 +138,7 @@ if(exist == true)
 正例：
 \begin{leftbar}
 \begin{c++}
-if(erabs.contains(ErabId(2))
+if(nodes.contains(NodeId(2))
 {
     ...
 }

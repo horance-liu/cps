@@ -141,59 +141,65 @@ struct TransactionListener
 \end{leftbar}
 
 \begin{regulation}
-当返回的是一个新创建的对象时，必须返回其值类型; 更有甚者，返回\ascii{const}的值类型将改善编译时的安全性
+当返回的是一个新对象时，必须返回其值类型; 更有甚者，返回\ascii{const}的值类型将改善编译时的安全性
 \end{regulation}
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={domain/GlobalIdentity.h}]
-#ifndef UTYKLFLDQX74697_KJTUIONQA_3895903_NBFIT
-#define UTYKLFLDQX74697_KJTUIONQA_3895903_NBFIT
+\begin{c++}[caption={math/Rectangle.h}]
+#ifndef EWRIUN9037_NVHD6452_JKLSDFUIE7562_HGYE
+#define EWRIUN9037_NVHD6452_JKLSDFUIE7562_HGYE
 
 #include "base/BaseTypes.h"
 
-struct GlobalIdentity
+struct Rectangle
 {
-    explicit GlobalIdentity(const U16 id);
+    Rectangle(const U8 width, const U8 height);
 
-    bool isValid() const;
+    U16 getArea() const;
+    U16 getPerimeter() const;
+    
+    bool operator==(const Rectangle& rhs) const;
+    bool operator!=(const Rectangle& rhs) const;
+    
+    Rectangle& operator+=(const Rectangle& rhs) const;
+    Rectangle& operator+(const Rectangle& rhs) const;
 
-    bool operator==(const GlobalIdentity& rhs) const;
-    bool operator!=(const GlobalIdentity& rhs) const;
-
-    static GlobalIdentity& valueOf(const U16 value);
-	
 private:
-    const U16 id;	
+    const U8 width;
+    const U8 height;
 };
 
 #endif
 \end{c++}
 \end{leftbar}
 
-静态工厂方法\ascii{valueOf}返回的是一个新创建的实例，所以返回值必须设计为值类型，提供\ascii{const}的修饰能够加强编译时的安全性检查。
+\ascii{operator+}返回的是一个新实例，返回值必须设计为值类型。如果提供\ascii{const}的修饰能够加强编译时的安全性检查。此外，需要注意的是\ascii{operator+=}返回的是修改后的\texttt{*this}对象引用。
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={domain/GlobalIdentity.h}]
-#ifndef UTYKLFLDQX74697_KJTUIONQA_3895903_NBFIT
-#define UTYKLFLDQX74697_KJTUIONQA_3895903_NBFIT
+\begin{c++}[caption={math/Rectangle.h}]
+#ifndef EWRIUN9037_NVHD6452_JKLSDFUIE7562_HGYE
+#define EWRIUN9037_NVHD6452_JKLSDFUIE7562_HGYE
 
 #include "base/BaseTypes.h"
 
-struct GlobalIdentity
+struct Rectangle
 {
-    explicit GlobalIdentity(const U16 id);
+    Rectangle(const U8 width, const U8 height);
 
-    bool isValid() const;
-
-    bool operator==(const GlobalIdentity& rhs) const;
-    bool operator!=(const GlobalIdentity& rhs) const;
-
-    static const GlobalIdentity valueOf(U16 value);
+    U16 getArea() const;
+    U16 getPerimeter() const;
+    
+    bool operator==(const Rectangle& rhs) const;
+    bool operator!=(const Rectangle& rhs) const;
+    
+    Rectangle& operator+=(const Rectangle& rhs) const;
+    const Rectangle operator-(const Rectangle& rhs) const;
 
 private:
-    const U16 id;	
+    const U8 width;
+    const U8 height;
 };
 
 #endif
@@ -227,9 +233,9 @@ private:
 \begin{enum}
   \eitem{不能提供修改对象状态的方法}
   \eitem{保证类不能被扩展，切忌提供\ascii{virtual destructor}}
-  \eitem{所有域都是\ascii{const}}
-  \eitem{所有域都是\ascii{private}}
-  \eitem{绝不允许重新赋值}
+  \eitem{所有成员变量和方法都是\ascii{const}}
+  \eitem{所有成员变量都是\ascii{private}}
+  \eitem{绝不允许重新赋值，但允许复制出新的实例}
 \end{enum}
 
 不可变类唯一的缺点就是，对于每一个不同的值都需要一个单独的对象。当需要创建大量此类对象时，性能可能成为瓶颈。当性能成为关键瓶颈的时候，为不可变类设计可变配套类是一种典型的设计方式。

@@ -697,7 +697,7 @@ private:
 \end{leftbar}
 
 \begin{regulation}
-所有\ascii{override}的函数必然是\ascii{private}的，以保证按接口编程的良好设计原则
+所有\ascii{override}的函数\footnote{除\ascii{override}的\ascii{virtual}析构函数之外。}都应该是\ascii{private}的，以保证按接口编程的良好设计原则
 \end{regulation}
 
 反例：

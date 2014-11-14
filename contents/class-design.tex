@@ -260,7 +260,7 @@ Account* AccountFactory::create(const U8 type)
     {
     case LOCAL_ACCOUNT: 
         return new (m.local.alloc()) LocalAccount;
-    case LOCAL_ACCOUNT: 
+    case REMOTE_ACCOUNT: 
         return new (m.remote.alloc()) RemoteAccount;
     default: break;
     }
@@ -339,7 +339,7 @@ struct StructWrapper : protected From
     }
 };
 
-#define STRUCT_WRAPPER(To, From) strict To : StructWrapper<From, To>
+#define STRUCT_WRAPPER(To, From) struct To : StructWrapper<From, To>
 
 #endif
 \end{c++}
