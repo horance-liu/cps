@@ -1,62 +1,74 @@
-C++ Programming Style, Guilds, Rules, and Patterns.
-=============
+# C++ Programming Style: Guilds, Rules, and Patterns.
+
 Licensed under [MIT License][].
 
-Downloads
----------
-You can obtain full latex source files of C++ Programming Style from [https://bitbucket.org/horance/cpp-programming-style][]
+## Download PDF
 
-Developers
-----------------
-Horance Liu
+```bash
+$ wget -c https://raw.github.com/ccock/cps/master/cpp-programming-style.pdf
+```
 
-Install Tex
----------------
+## Downloads
+
+You can obtain full latex source files of C++ Programming Style from [https://github.com/ccock/cps](https://github.com/ccock/cps)
+
+## Install Tex
+
 You should install full texlive packages.
 
-  * __Ubuntu__ 
-      
-      * sudo apt-get install texlive-full
- 
-  * __MAC OS__
-      * download [MacTeX.pkg][], and install it.
+- Ubuntu     
 
-  * __Microsoft__ 
-      
-      * download [CTEX-full][], and install it.
+```bash
+$ sudo apt-get install texlive-full
+```
 
-Install Missing Fonts
----------------
+- MacOS
+
+Download [MacTeX.pkg](http://tug.org/mactex/), and install it.
+
+- Windowns
+      
+Download [CTEX-full](http://www.ctex.org/CTeXDownload), and install it.
+
+## Install Missing Fonts
+
 Then you should install some missing chinese fonts.
 
-  * __Ubuntu__ 
+- Ubuntu
 
-      * sudo mkdir /usr/local/share/fonts/truetype
-      * sudo cp -R fonts /usr/local/share/fonts/truetype
-      * cd /usr/local/share/fonts/truetype
-      * sudo mv fonts win-fonts
-      * sudo chown -R root win-fonts
-      * sudo fc-cache
+```bash
+$ sudo mkdir /usr/local/share/fonts/truetype
+$ sudo cp -R fonts /usr/local/share/fonts/truetype
+$ cd /usr/local/share/fonts/truetype
+$ sudo mv fonts win-fonts
+$ sudo chown -R root win-fonts
+$ sudo fc-cache
+```
 
-  * __Mac OS__ 
+- MacOS 
     
-      * import all missing fonts into fontbook
+Import all missing fonts into fontbook
 
-  * __Windows__
+- Windows
  
-      * copy the all missing fonts into C:/WINDOWS/Fonts
-      * fc-cache
+Copy the all missing fonts into C:/WINDOWS/Fonts
 
-Generate PDF
------------------
-Run make
+```bash
+$ fc-cache
+```
 
-View PDF
------------------
-output/cpp-programming-style.pdf
-cpp-programming-style.pdf
+## Build
 
-[MIT License]: http://opensource.org/licenses/mit-license.html 
-[MacTeX.pkg]: http://tug.org/mactex/
-[CTEX-full]: http://www.ctex.org/CTeXDownload
-[https://bitbucket.org/horance/cpp-programming-style]: https://bitbucket.org/horance/cpp-programming-style/downloads
+```bash
+$ make
+```
+
+## Preview PDF
+
+```bash
+$ open output/cpp-programming-style.pdf
+```
+
+## License
+
+[MIT License](http://opensource.org/licenses/mit-license.html) 
