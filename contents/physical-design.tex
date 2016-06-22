@@ -6,12 +6,235 @@
 \chapter{物理设计} 
 \label{ch:physical-design}
 
+\section{概念}
+
+\begin{content}
+
+物理设计主要是软件设计中的物理实体（文件）的设计，例如某个函数定义应该放在哪个文件中、某个函数是否需要\ascii{inline}等；逻辑设计主要针对软件设计中的逻辑实体关系的设计，例如类之间的关系，\ascii{has-a/use-a/is-a}的关系。
+
+物理设计的主要目标是减少文件的物理依赖；而逻辑设计的主要目标是减少逻辑依赖。物理依赖更多的体现为编译时的依赖和链接时的依赖；物理依赖受逻辑依赖影响，但是又不局限于逻辑依赖。
+
+\end{content}
+
+\section{物理结构}
+
+\begin{content}
+
+\begin{regulation}
+遵循惯例优于配置的基本原则，公司内部所有项目组织结构应该保持一致，便于项目的自动化构建。
+\end{regulation}
+
+以\ascii{cut}项目为例，总体上分\ascii{include, src, test}三个目录；头文件，源文件，测试文件存在对称关系；构建文件分级构建，例如`CMakeLists.txt, Makefile`。
+
+正例：
+\begin{leftbar}
+\begin{c++}[caption={项目结构}]
+cut
+├── CMakeLists.txt
+├── LICENSE
+├── README.md
+├── include
+│   └── cut
+│       ├── core
+│       │   ├── Test.h
+│       │   ├── TestCase.h
+│       │   ├── TestFixture.h
+│       │   ├── TestListener.h
+│       │   ├── TestResult.h
+│       │   ├── TestRunner.h
+│       │   └── TestSuite.h
+│       ├── cut.h
+│       ├── cut.hpp
+├── src
+│   ├── CMakeLists.txt
+│   └── cut
+│       ├── core
+│       │   ├── TestCase.cpp
+│       │   ├── TestResult.cpp
+│       │   ├── TestRunner.cpp
+│       │   └── TestSuite.cpp
+└── test
+    ├── CMakeLists.txt
+    ├── cut
+    │   ├── TestCaseSpec.cpp
+    │   ├── TestSuiteSpec.cpp    
+    │   ├── TestListenerSpec.cpp
+    ├── main.cpp
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+文件布局，团队应遵循统一的风格。
+\end{regulation}
+
+一个头文件包括头文件保护宏，\ascii{include}语句，命名空间，前置声明，类定义等。
+
+正例：
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.h}}]
+#ifndef _YILL50M2RW1ONKOTDE31GYE4PZNVDLHH1CKFXS75LL4DA2NDCQSX9H5Y               
+#define _YILL50M2RW1ONKOTDE31GYE4PZNVDLHH1CKFXS75LL4DA2NDCQSX9H5Y
+
+#include <cut/core/Test.h>
+#include <cut/core/TestFixture.h>
+
+CUT_NS_BEGIN
+
+struct TestCase : Test, TestFixture
+{
+    TestCase(const std::string& name);
+
+    void runBare(TestResult&);
+
+private:
+    OVERRIDE(void run(TestResult&));
+    OVERRIDE(int countTestCases() const);
+    OVERRIDE(int countChildTests() const);
+    OVERRIDE(const std::string& getName() const);
+
+private:
+    DEFAULT(void, runTest());
+
+private:
+    template <typename Functor>
+    bool protect(TestResult& result, Functor functor, const char* desc = "");
+
+private:
+    const std::string name;
+};
+
+CUT_NS_END
+
+#endif
+\end{c++}
+\end{leftbar}
+
+实现文件的布局，包括匿名命名空间定义，类成员函数实现等等。
+
+正例：
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.cpp}}]
+#include <cut/core/TestCase.h>
+#include <cut/core/TestFunctor.h>
+#include <cut/core/TestResult.h>
+
+CUT_NS_BEGIN
+
+TestCase::TestCase(const std::string& name) : name(name)
+{}
+
+namespace
+{
+    struct TestCaseFunctor : TestFunctor
+    {
+        using Method = void(TestCase::*)();
+        
+        TestCaseFunctor(TestCase& test, Method method)
+            : test(test), method(method)
+        {}
+
+    private:
+        OVERRIDE(bool operator()() const)
+        {
+            (test.*method)();
+            return true;
+        }
+
+        IMPL_ROLE_WITH_OBJ(Test, test);
+
+    private:
+       TestCase& test;
+       Method method;
+    };
+}
+
+template <typename Functor>
+inline bool TestCase::protect(TestResult& result, Functor functor, const char* desc)
+{
+    return result.protect(TestCaseFunctor(*this, functor), desc);
+}
+
+#define PROTECT(functor) protect(result, &TestCase::functor, " in the "#functor)
+
+void TestCase::runBare(TestResult& result)
+{
+    if (PROTECT(setUp))
+    {
+        PROTECT(runTest);
+    }
+    PROTECT(tearDown);
+}
+
+void TestCase::run(TestResult& result)
+{
+    result.run(*this);
+}
+
+int TestCase::countTestCases() const
+{
+  return 1;
+}
+
+int TestCase::countChildTests() const
+{
+    return 0;
+}
+
+const std::string& TestCase::getName() const
+{
+    return name;
+}
+
+CUT_NS_END
+\end{c++}
+\end{leftbar}
+
+实现文件是一种典型的隐藏实现的技术，能够极大地缩小用户依赖的范围，为此我们鼓励实现的隐藏和封装。例如，\ascii{TestCase::protect}虽然是模板，但它仅仅被\ascii{TestCase::runBare}所范围，为此在头文件中将其声明为\ascii{private}，并且没有在头文件中展开实现。
+
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.h}}]
+struct TestCase : Test, TestFixture
+{
+   ...
+
+private:
+    template <typename Functor>
+    bool protect(TestResult& result, Functor functor, const char* desc = "");
+};
+\end{c++}
+\end{leftbar}
+
+而只需在实现文件中，在被依赖的点之前完成模板的定义即可；并且在定义时，因为在实现文件内部，所以可以大胆地使用\ascii{inline}机制。
+
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.cpp}}]
+template <typename Functor>
+inline bool TestCase::protect(TestResult& result, Functor functor, const char* desc)
+{
+    return result.protect(TestCaseFunctor(*this, functor), desc);
+}
+
+#define PROTECT(functor) protect(result, &TestCase::functor, " in the "#functor)
+
+void TestCase::runBare(TestResult& result)
+{
+    if (PROTECT(setUp))
+    {
+        PROTECT(runTest);
+    }
+    PROTECT(tearDown);
+}
+\end{c++}
+\end{leftbar}
+
+\end{content}
+
 \section{头文件}
 
 \begin{content}
 
 \begin{regulation}
-自定义头文件必须具有扩展名，以区分\cpp{}标准库的头文件；在团队内部，头文件、源文件扩展名类型必须保持一致性
+自定义头文件必须具有扩展名，以区分\ascii{C++}标准库的头文件；在团队内部，头文件、源文件扩展名类型必须保持一致性。
 \end{regulation}
 
 表\reftbl{file-extension}列出了头文件和实现文件常见的扩展名，团队应该选择一类扩展名并保持团队内一致性。
@@ -37,21 +260,20 @@
 
 命名规则包括两种风格：
 \begin{enum}
-  \eitem{\tt{INCL\_<PROJECT>\_<MODULE>\_<FILE>\_H}}
-  \eitem{\ascii{全局唯一的随机序列码\footnote{例如\ascii{Eclipse}可以配置头文件的代码模板，\ascii{Visual
-  C++}也存在类似的插件，其他\ascii{IDE}也存在类似的功能}}}
+  \eitem{INCL\_<PROJECT>\_<MODULE>\_<FILE>\_H}
+  \eitem{\ascii{全局唯一的随机序列码\footnote{例如\ascii{Eclipse}可以配置头文件的代码模板，其他\ascii{IDE}也存在类似的功能。}}}
 \end{enum}
 
 第一种命名规则问题在于：当文件名重命名或移动目录时，需要同步修改头文件保护宏；推荐使用\ascii{IDE}随机自动地生成头文件保护宏，其更加快捷、简单、安全、有效。
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={thread/Runnable.h}]
+\begin{c++}[caption={\ttfamily{cub/thread/Runnable.h}}]
 // 因名称太短，存在名字冲突的可能性
 #ifndef RUNNABLE_H
 #define RUNNABLE_H
 
-#include "base/Role.h"
+#include <cub/base/Role.h>
 
 DEFINE_ROLE(Runnable)
 {
@@ -64,37 +286,16 @@ DEFINE_ROLE(Runnable)
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={cppunit/AutoRegisterSuite.h}]
-#ifndef INCL_CPPUNIT_AUTO_REGISTER_SUITE_H
-#define INCL_CPPUNIT_AUTO_REGISTER_SUITE_H
+\begin{c++}[caption={\ttfamily{cub/thread/Runnable.h}}]
+// UUID: IDE自动生成
+#ifndef ADCM_LLL_3465_DCPOE_ACLDDDE_479_YTEY_SDJWEOX_234798SDN
+#define ADCM_LLL_3465_DCPOE_ACLDDDE_479_YTEY_SDJWEOX_234798SDN
 
-#include "base/Role.h"
+#include <cub/base/Role.h>
 
-struct TestSuite;
-
-DEFINE_ROLE(AtuoRegisterSuite)
+DEFINE_ROLE(Runnable)
 {
-    ABSTRACT(void add(TestSuite&));
-};
-
-#endif
-\end{c++}
-\end{leftbar}
-
-正例：
-\begin{leftbar}
-\begin{c++}[caption={cppunit/AutoRegisterSuite.h}]
-// IDE自动生成
-#ifndef INCL_ADCM_LLL_3465_DCPOE_ACLDDDE_479_YTEY_H
-#define INCL_ADCM_LLL_3465_DCPOE_ACLDDDE_479_YTEY_H
-
-#include "base/Role.h"
-
-struct TestSuite;
-
-DEFINE_ROLE(AtuoRegisterSuite)
-{
-    ABSTRACT(void add(TestSuite&));
+    ABSTRACT(void run());
 };
 
 #endif
@@ -102,21 +303,123 @@ DEFINE_ROLE(AtuoRegisterSuite)
 \end{leftbar}
 
 \begin{regulation}
-路径名一律使用小写、下划线或中划线风格的名称；文件名应该与程序主要实体名称相同，可以使用驼峰命名，也可以使用小写、下划线或中划线分割的名字；实现文件的名字必须和头文件保持一致；更重要的是，团队内必须保持一致的命名风格
+包含头文件时，统一使用尖括号。
+\end{regulation}
+
+即使在同一目录下，也不采用相对路径包含头文件。这样做，在没有严重牺牲编译效率的前提下，可以形成同一的代码规范，程序员再也不用被这件事情所困扰。
+
+反例：
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.h}}]
+#ifndef _YILL50M2RW1ONKOTDE31GYE4PZNVDLHH1CKFXS75LL4DA2NDCQSX9H5Y               
+#define _YILL50M2RW1ONKOTDE31GYE4PZNVDLHH1CKFXS75LL4DA2NDCQSX9H5Y
+
+// 即使TestCase, Test, TestFixture在同一目录，
+// 也不采用相对路径的方式组织include语句
+#include "Test.h"
+#include "TestFixture.h"
+
+CUT_NS_BEGIN
+
+struct TestCase : Test, TestFixture
+{
+    TestCase(const std::string& name);
+
+private:
+    OVERRIDE(void run(TestResult&));
+    OVERRIDE(int countTestCases() const);
+    OVERRIDE(int countChildTests() const);
+    OVERRIDE(const std::string& getName() const);
+
+private:
+    const std::string name;
+};
+
+CUT_NS_END
+
+#endif
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.h}}]
+#ifndef _YILL50M2RW1ONKOTDE31GYE4PZNVDLHH1CKFXS75LL4DA2NDCQSX9H5Y               
+#define _YILL50M2RW1ONKOTDE31GYE4PZNVDLHH1CKFXS75LL4DA2NDCQSX9H5Y
+
+// 统一采用：#include <project/module/file.h>的风格
+#include <cut/core/Test.h>
+#include <cut/core/TestFixture.h>
+
+CUT_NS_BEGIN
+
+struct TestCase : Test, TestFixture
+{
+    TestCase(const std::string& name);
+
+private:
+    OVERRIDE(void run(TestResult&));
+    OVERRIDE(int countTestCases() const);
+    OVERRIDE(int countChildTests() const);
+    OVERRIDE(const std::string& getName() const);
+
+private:
+    const std::string name;
+};
+
+CUT_NS_END
+
+#endif
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+文件名应该与程序主要实体名称相同。
 \end{regulation}
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={路径名\ascii{htmlParser}使用了驼峰命名风格}]
-#include "htmlParser/core/Attribute.h"
+\begin{c++}[caption={\ttfamily{cut/core/test\_case.h}}]
+// 文件名与类名不一致
+struct TestCase
+{
+    explicit TestCase(const std::string& name);
+
+private:
+    const std::string name;
+};
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.h}}]
+struct TestCase
+{
+    explicit TestCase(const std::string& name);
+
+private:
+    const std::string name;
+};
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+路径名一律使用小写、下划线或中划线风格的名称。
+\end{regulation}
+
+反例：
+\begin{leftbar}
+\begin{c++}[caption={驼峰风格的路径名}]
+// 路径名\ascii{htmlParser}使用了驼峰命名风格
+#include <htmlParser/core/Attribute.h>
 \end{c++}
 \end{leftbar}
 
 正例：
 \begin{leftbar}
 \begin{c++}[caption={正确的头文件包含}]
-#include "html-parser/core/Attribute.h"
-#include "yaml_parser.h"
+#include <html-parser/core/Attribute.h>
 \end{c++}
 \end{leftbar}
 
@@ -124,37 +427,38 @@ DEFINE_ROLE(AtuoRegisterSuite)
 包含头文件时，必须保持路径名、文件名大小写敏感
 \end{regulation}
 
-因为在\ascii{Windows}，其大小写不敏感，编译时检查失效，代码失去了可移植性，所以在包含头文件时必须保持文件名的大小写敏感。
+为了保证代码的最大化可移植性，在包含头文件时必须保持文件名的大小写敏感。
 
-假如存在两个物理文件名分别为\ascii{SynchronizedObject.h, yaml\_parser.h}的文件。
+假如存在两个物理文件名，真实的路径分别为：\ascii{cub/base/SynchronizedObject.h, ymal/yaml\_parser.h}。
 
 反例：
 \begin{leftbar}
 \begin{c++}
-// 路径名、文件名大小写与真实物理路径、物理文件名称不符
-#include "CppUnit/Core/SynchronizedObject.h"
-#include "YAML_Parser.h"
+// 路径名大小写与真实物理路径不符
+#include <Cub/Base/SynchronizedObject.h>
+
+// 文件名大小写与真实物理文件名称不符
+#include <ymal/YAML_Parser.h>
 \end{c++}
 \end{leftbar}
 
 正例：
 \begin{leftbar}
 \begin{c++}
-#include "cppunit/core/SynchronizedObject.h"
-#include "yaml_parser.h"
+#include <cut/core/SynchronizedObject.h>
+#include <yaml_parser.h>
 \end{c++}
 \end{leftbar}
 
 \begin{regulation}
-包含头文件时，路径分隔符一律使用\ascii{Unix}风格，拒绝使用\ascii{Windows}风格；即采用\code{/}
-而不是使用\textbackslash{}分割路径
+包含头文件时，路径分隔符一律使用\ascii{Unix}风格，拒绝使用\ascii{Windows}风格。
 \end{regulation}
 
 反例：
 \begin{leftbar}
 \begin{c++}
 // 使用了Windows风格的路径分割符
-#include "cppunit\core\SynchronizedObject.h"
+#include <cub\base\SynchronizedObject.h>
 \end{c++}
 \end{leftbar}
 
@@ -162,7 +466,7 @@ DEFINE_ROLE(AtuoRegisterSuite)
 \begin{leftbar}
 \begin{c++}
 // 使用了Unix风格的路径分割符
-#include "cppunit/core/SynchronizedObject.h"
+#include <cub/base/SynchronizedObject.h>
 \end{c++}
 \end{leftbar}
 
@@ -172,7 +476,7 @@ DEFINE_ROLE(AtuoRegisterSuite)
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={oss/oss\_memery.h}]
+\begin{c++}[caption={\ttfamily{oss/oss\_memery.h}}]
 #ifndef HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8
 #define HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8
     
@@ -181,7 +485,7 @@ extern "C" {
 #endif
 
 // 错误地将include放在了extern "C"中
-#include "oss_common.h"
+#include <oss_def.h>
 
 void* oss_alloc(size_t);
 void  oss_free(void*);
@@ -196,18 +500,18 @@ void  oss_free(void*);
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={oss/oss\_memery.h}]
+\begin{c++}[caption={\ttfamily{oss/oss\_memery.h}}]
 #ifndef HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8
 #define HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8
     
-#include "oss_common.h"
+#include <oss/def.h>
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
-void* OSS_alloc(size_t);
-void  OSS_free(void*);
+void* oss_alloc(size_t);
+void  oss_free(void*);
 
 #ifdef  __cplusplus
 }
@@ -218,8 +522,8 @@ void  OSS_free(void*);
 \end{leftbar}
 
 \begin{regulation}
-当以\clang{}提供实现时，头文件中必须使用\ascii{extern}
-\texttt{"}\ascii{C}\texttt{"}声明，以便支持\cpp{}的扩展
+当以\ascii{C}提供实现时，头文件中必须使用\ascii{extern}
+\texttt{"}\ascii{C}\texttt{"}声明，以便支持\ascii{C++}的扩展。
 \end{regulation}
 
 反例：
@@ -228,7 +532,7 @@ void  OSS_free(void*);
 #ifndef HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8
 #define HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8    
 
-#include "oss_common.h"
+#include <oss/def.h>
 
 void* oss_alloc(size_t);
 void  oss_free(void*);
@@ -243,7 +547,7 @@ void  oss_free(void*);
 #ifndef HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8
 #define HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8    
 
-#include "oss_common.h"
+#include <oss/def.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -270,7 +574,7 @@ void  oss_free(void*);
 
 巨型头文件必然造成了巨大的编译时依赖，不仅仅带来巨大的编译时开销，更重要的是这样的设计将太多的实现细节暴露给用户，导致后续版本兼容性的问题，阻碍了头文件进一步演进、修改、扩展的可能性，从而失去了软件的可扩展性。
 
-不要认为提供一个大而全的头文件会给你的用户带来方便，用户因此而更加困扰。你应该更多地追求头文件的自满足性，而不是让你的用户还要关心头文件之间的依赖关系。
+不要认为提供一个大而全的头文件会给你的用户带来方便，用户因此而更加困扰。另外，头文件应该自满足，而不是让用户还要关心头文件之间的依赖关系。巨大的头文件，因为复杂，是很难保证其自满足性，从而带来维护上的麻烦，并且降低了代码的可读性。
 
 \end{content}
 
@@ -309,7 +613,7 @@ TestFixture}都存在编译时依赖，但没有包含基类的头文件。
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={cppunit/TestCase.h}]
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.h}}]
 #ifndef EOPTIAWE_23908576823_MSLKJDFE_0567925
 #define EOPTIAWE_23908576823_MSLKJDFE_0567925    
 
@@ -336,12 +640,12 @@ private:
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={cppunit/TestCase.h}]
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.h}}]
 #ifndef EOPTIAWE_23908576823_MSLKJDFE_0567925
 #define EOPTIAWE_23908576823_MSLKJDFE_0567925    
 
-#include "cppunit/core/TestLeaf.h"
-#include "cppunit/core/TestFixture.h"
+#include <cut/core/TestLeaf.h>
+#include <cut/core/TestFixture.h>
 
 struct TestCase : TestLeaf, TestFixture
 {
@@ -362,23 +666,23 @@ private:
 \end{c++}
 \end{leftbar}
 
-即使\ascii{TestCase}直接持有\ascii{name}的成员变量，但没有必要包含\ascii{std::string}的头文件，因为\ascii{TestCase}覆写了其父类的\ascii{getName}成员函数，父类为了保证自满足原则，自然已经包含了\ascii{std::string}的头文件。
+即使\ascii{TestCase}持有\ascii{std::string name}成员变量，但没有必要包含\ascii{std::string}的头文件。因为\ascii{TestCase}覆写了其父类的\ascii{getName}成员函数，父类为了保证自满足原则，自然已经包含了\ascii{std::string}的头文件。
 
-同样的原因，也没有必要在此前置声明\ascii{TestResult}，因为父类可定已经声明过了。
+同样的原因，也没有必要在此前置声明\ascii{TestResult}，因为父类已经声明过了。两者成立的前提时，父类都要遵循良好的头文件自满足原则。
 
 \begin{regulation}
-实现文件的第一行代码必然是包含其对应的头文件
+实现文件的第一行代码必然是包含其对应的头文件。
 \end{regulation}
 
 创建对应的实现文件\ascii{TestCase.cpp}，并将自身头文件的进行包含，并置在实现文件的第一行，这是验证头文件自满足的最好的办法。
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={cppunit/TestCase.cpp}]
-#include "cppunit/core/TestResult.h"
-#include "cppunit/core/Functor.h"
-// 错误：没有放在第一行，无法校验其自满足性
-#include "cppunit/core/TestCase.h"
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.cpp}}]
+#include <cut/core/TestResult.h>
+#include <cut/core/Functor.h>
+// 没有放在第一行，无法校验其自满足性
+#include <cut/core/TestCase.h>
 
 namespace
 {
@@ -402,20 +706,22 @@ namespace
     };
 }
 
-void TestCase::run(TestResult &result)
+template <typename Functor>
+inline bool TestCase::protect(TestResult& result, Functor functor, const char* desc)
 {
-    result.startTest(*this);
-  
-    if (result.protect(TestCaseMethodFunctor(*this, &TestCase::setUp)))
-    {
-        result.protect(TestCaseMethodFunctor(*this, &TestCase::runTest)); 
-    }
-
-    result.protect(TestCaseMethodFunctor(*this, &TestCase::tearDown));
-
-    result.endTest(*this);
+    return result.protect(TestCaseFunctor(*this, functor), desc);
 }
 
+#define PROTECT(functor) protect(result, &TestCase::functor, " in the "#functor)
+
+void TestCase::runBare(TestResult& result)
+{
+    if (PROTECT(setUp))
+    {
+        PROTECT(runTest);
+    }
+    PROTECT(tearDown);
+}
 ...
 
 \end{c++}
@@ -423,10 +729,10 @@ void TestCase::run(TestResult &result)
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={cppunit/TestCase.cpp}]
-#include "cppunit/core/TestCase.h"
-#include "cppunit/core/TestResult.h"
-#include "cppunit/core/Functor.h"
+\begin{c++}[caption={\ttfamily{cut/core/TestCase.cpp}}]
+#include <cut/core/TestCase.h>
+#include <cut/core/TestResult.h>
+#include <cut/core/Functor.h>
 
 namespace
 {
@@ -450,18 +756,15 @@ namespace
     };
 }
 
-void TestCase::run(TestResult &result)
+#define PROTECT(functor) protect(result, &TestCase::functor, " in the "#functor)
+
+void TestCase::runBare(TestResult& result)
 {
-    result.startTest(*this);
-  
-    if (result.protect(TestCaseMethodFunctor(*this, &TestCase::setUp))
+    if (PROTECT(setUp))
     {
-        result.protect(TestCaseMethodFunctor(*this, &TestCase::runTest)); 
+        PROTECT(runTest);
     }
-
-    result.protect(TestCaseMethodFunctor(*this, &TestCase::tearDown));
-
-    result.endTest(*this);
+    PROTECT(tearDown);
 }
 
 ...
@@ -476,16 +779,15 @@ void TestCase::run(TestResult &result)
 这是\ascii{SRP(Single Reponsibility
 Priciple)}在头文件设计时的一个具体运用。头文件如果包含了其它不相关的元素，则包含该头文件的所有实现文件都将被这些不相关的元素所污染，重编译将成为一件高概率的事件。
 
-如示例代码，将\ascii{OutputStream, InputStream}同时定义在一个头文件中，将违背该原则。
-本来只需只读接口，无意中被只写接口所污染。
+如示例代码，将\ascii{OutputStream, InputStream}同时定义在一个头文件中，将违背该原则。假如用户只需要只读接口，无意中地使得用户被只写接口所间接污染。
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={io/Stream.h}]
+\begin{c++}[caption={\ttfamily{io/Stream.h}}]
 #ifndef LDGOUIETA_437689Q20_ASIOHKFGP_980341
 #define LDGOUIETA_437689Q20_ASIOHKFGP_980341
 
-#include "base/Role.h"
+#include <cut/base/Role.h>
 
 DEFINE_ROLE(OutputStream)
 {
@@ -503,11 +805,11 @@ DEFINE_ROLE(InputStream)
 
 正例：先创建一个\ascii{OutputStream.h}文件：
 \begin{leftbar}
-\begin{c++}[caption={io/OutputStream.h}]
+\begin{c++}[caption={\ttfamily{io/OutputStream.h}}]
 #ifndef LDGOUIETA_437689Q20_ASIOHKFGP_010234
 #define LDGOUIETA_437689Q20_ASIOHKFGP_010234
     
-#include "base/Role.h"
+#include <cut/base/Role.h>
 
 DEFINE_ROLE(OutputStream)
 {
@@ -521,11 +823,11 @@ DEFINE_ROLE(OutputStream)
 再创建一个\ascii{InputStream.h}文件：
 
 \begin{leftbar}
-\begin{c++}[caption={io/InputStream.h}]
+\begin{c++}[caption={\ttfamily{io/InputStream.h}}]
 #ifndef LDGOUIETA_437689Q20_ASIOHKFGP_783621
 #define LDGOUIETA_437689Q20_ASIOHKFGP_783621
 
-#include "base/Role.h"
+#include <cut/base/Role.h>
 
 DEFINE_ROLE(InputStream)
 {
@@ -544,12 +846,12 @@ DEFINE_ROLE(InputStream)
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={cppunit/Test.h}]
+\begin{c++}[caption={\ttfamily{cut/core/Test.h}}]
 #ifndef PERTP_8792346_QQPKSKJ_09472_HAKHKAIE
 #define PERTP_8792346_QQPKSKJ_09472_HAKHKAIE
 
-#include <base/Role.h>
-#include <cppunit/core/TestResult.h>
+#include <cut/base/Role.h>
+#include <cut/core/TestResult.h>
 #include <string>
 
 DEFINE_ROLE(Test)
@@ -566,7 +868,7 @@ DEFINE_ROLE(Test)
 
 如示例代码，定义了一个\ascii{xUnit}框架中的\ascii{Test}顶级接口，其对\ascii{TestResult}的依赖仅仅是一个声明依赖，并没有必要包含\ascii{TestResult.h}，前置声明是解开这类编译依赖的钥匙。
 
-值得注意的是，对标准库\ascii{std::string}的依赖，即使它仅作为返回值，但因为它实际上是一个\ascii{typedef}，所以必须老实地包含其对应的头文件。事实上，如果产生了对标准库名称的依赖，基本上都需要包含对应的头文件。
+值得注意的是，对标准库\ascii{std::string}的依赖，即使它仅作为返回值，但因为它实际上是一个\ascii{typedef}，所以必须老实地包含其对应的头文件。事实上，如果产生了对标准库名称的依赖，都需要包含对应的头文件。
 
 另外，对\ascii{DEFINE\_ROLE}宏定义的依赖则需要包含相应的头文件，以便实现该头文件的自满足。
 
@@ -574,11 +876,11 @@ DEFINE_ROLE(Test)
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={cppunit/Test.h}]
+\begin{c++}[caption={\ttfamily{cut/core/Test.h}}]
 #ifndef PERTP_8792346_QQPKSKJ_09472_HAKHKAIE
 #define PERTP_8792346_QQPKSKJ_09472_HAKHKAIE
 
-#include <base/Role.h>
+#include <cut/base/Role.h>
 #include <string>
 
 struct TestResult;
@@ -629,12 +931,12 @@ function-data}依次排列类的成员，并对具有相同特征的成员归类
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={trans-dsl/sched/SimpleAsyncAction.h}]
+\begin{c++}[caption={\ttfamily{trans-dsl/sched/SimpleAsyncAction.h}}]
 #ifndef IUOTIOUQW_NMAKLKLG_984592_KJSDKLJFLK
 #define IUOTIOUQW_NMAKLKLG_984592_KJSDKLJFLK
 
-#include "trans-dsl/action/Action.h"
-#include "trans-dsl/utils/EventHandlerRegistry.h"
+#include <trans-dsl/action/Action.h>
+#include <trans-dsl/utils/EventHandlerRegistry.h>
 
 struct SimpleAsyncAction : Action
 {
@@ -662,12 +964,12 @@ struct SimpleAsyncAction : Action
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={trans-dsl/sched/SimpleAsyncAction.h}]
+\begin{c++}[caption={\ttfamily{trans-dsl/sched/SimpleAsyncAction.h}}]
 #ifndef IUOTIOUQW_NMAKLKLG_984592_KJSDKLJFLK
 #define IUOTIOUQW_NMAKLKLG_984592_KJSDKLJFLK
 
-#include "trans-dsl/action/Action.h"
-#include "trans-dsl/utils/EventHandlerRegistry.h"
+#include <trans-dsl/action/Action.h>
+#include <trans-dsl/utils/EventHandlerRegistry.h>
 
 struct SimpleAsyncAction : Action
 {
@@ -697,16 +999,16 @@ private:
 \end{leftbar}
 
 \begin{regulation}
-所有\ascii{override}的函数\footnote{除\ascii{override}的\ascii{virtual}析构函数之外。}都应该是\ascii{private}的，以保证按接口编程的良好设计原则
+所有\ascii{override}的函数\footnote{除\ascii{override}的\ascii{virtual}析构函数之外。}都应该是\ascii{private}的，以保证用户遵循按照接口编程的良好设计原则。
 \end{regulation}
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={html-parser/filter/AndFilter.h}]
+\begin{c++}[caption={\ttfamily{html-parser/filter/AndFilter.h}}]
 #ifndef EOIPWORPIO_06123124_NMVBNSDHJF_497392
 #define EOIPWORPIO_06123124_NMVBNSDHJF_497392
 
-#include "html-parser/filter/NodeFilter.h"
+#include <html-parser/filter/NodeFilter.h>
 #include <list>
 
 struct AndFilter : NodeFilter
@@ -726,11 +1028,11 @@ private:
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={html-parser/filter/AndFilter.h}]
+\begin{c++}[caption={\ttfamily{html-parser/filter/AndFilter.h}}]
 #ifndef EOIPWORPIO_06123124_NMVBNSDHJF_497392
 #define EOIPWORPIO_06123124_NMVBNSDHJF_497392
 
-#include "html-parser/filter/NodeFilter.h"
+#include <html-parser/filter/NodeFilter.h>
 #include <list>
 
 struct AndFilter : NodeFilter
@@ -786,13 +1088,13 @@ private:
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={ne/NetworkElementRepository.h}]
+\begin{c++}[caption={\ttfamily{ne/NetworkElementRepository.h}}]
 #ifndef UIJVASDF_8945873_YUQWTYRDF_85643
 #define UIJVASDF_8945873_YUQWTYRDF_85643    
 
-#include "base/Status.h"
-#include "base/BaseTypes.h"
-#include "transport/ne/NetworkElement.h"
+#include <cut/base/Status.h>
+#include <cut/base/BaseTypes.h>
+#include <transport/ne/NetworkElement.h>
 #include <vector>
 
 struct NetworkElementRepository
@@ -818,13 +1120,13 @@ private:
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={ne/NetworkElementRepository.h}]
+\begin{c++}[caption={\ttfamily{ne/NetworkElementRepository.h}}]
 #ifndef UIJVASDF_8945873_YUQWTYRDF_85643
 #define UIJVASDF_8945873_YUQWTYRDF_85643    
 
-#include "base/Status.h"
-#include "base/BaseTypes.h"
-#include "base/Role.h"
+#include <cut/base/Status.h>
+#include <cut/base/BaseTypes.h>
+#include <cut/base/Role.h>
 
 DEFINE_ROLE(NetworkElementRepository)
 {
@@ -842,10 +1144,10 @@ DEFINE_ROLE(NetworkElementRepository)
 其实现文件包含\ascii{NetworkElement.h}，将对其的依赖控制在本编译单元内部。
 
 \begin{leftbar}
-\begin{c++}[caption={ne/NetworkElementRepository.cpp}]
+\begin{c++}[caption={\ttfamily{ne/NetworkElementRepository.cpp}}]
 
-#include "transport/ne/NetworkElementRepository.h"
-#include "transport/ne/NetworkElement.h"
+#include <transport/ne/NetworkElementRepository.h>
+#include <transport/ne/NetworkElement.h>
 #include <vector>
 
 namespace
@@ -906,10 +1208,8 @@ static}的提取函数将常常被匿名\ascii{namespace}替代。请记住匿�
 
 但这些都不是重点，重点在于定义接口和继承时，冗余\ascii{public}修饰符总让人不舒服。简单设计四原则告诉告诉我们，所有冗余的代码都应该被剔除。
 
-但很多人会认为\ascii{struct}是\clang{}遗留问题，应该避免使用。但这不是问题，我们不应该否认在写\cpp{}程序时，依然在使用着很多\clang{}语言遗留的特性。关键在于，我们使用的是\clang{}语言中能给设计带来好处的特性，何乐而不为呢？
-
 \begin{leftbar}
-\begin{c++}[caption={hamcrest/SelfDescribing.h}]
+\begin{c++}[caption={\ttfamily{hamcrest/SelfDescribing.h}}]
 #ifndef OIWER_NMVCHJKSD_TYT_48457_GSDFUIE
 #define OIWER_NMVCHJKSD_TYT_48457_GSDFUIE
 
@@ -926,7 +1226,7 @@ struct SelfDescribing
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={hamcrest/SelfDescribing.h}]
+\begin{c++}[caption={\ttfamily{hamcrest/SelfDescribing.h}}]
 #ifndef OIWER_NMVCHJKSD_TYT_48457_GSDFUIE
 #define OIWER_NMVCHJKSD_TYT_48457_GSDFUIE
 
@@ -955,29 +1255,37 @@ public:
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={radio/domain/Cell.h}]
+\begin{c++}[caption={\ttfamily{radio/domain/Cell.h}}]
 #ifndef AQTYER_023874_NMHSFHKE_7432378293
 #define AQTYER_023874_NMHSFHKE_7432378293
 
+#include <cut/base/BaseTypes.h>
+
 typedef struct tag_Cell
 {
-    WORD16 wCellId;
-    WORD32 dwDlArfcn;
+    U16 cellId;
+    U32 dlArfcn;
 } T_Cell;
 
 #endif
 \end{c++}
 \end{leftbar}
 
+不给\ascii{struct}命名，而只给一个\ascii{typedef}的别名，也是极其不可取的（最糟糕的一种设计）。
+
+反例：
+
 \begin{leftbar}
-\begin{c++}[caption={radio/domain/Cell.h}]
+\begin{c++}[caption={\ttfamily{radio/domain/Cell.h}}]
 #ifndef AQTYER_023874_NMHSFHKE_7432378293
 #define AQTYER_023874_NMHSFHKE_7432378293
 
+#include <cut/base/BaseTypes.h>
+
 typedef struct
 {
-    WORD16 wCellId;
-    WORD32 dwDlArfcn;
+    U16 cellId;
+    U16 dlArfcn;
 } T_Cell;
 
 #endif
@@ -989,14 +1297,16 @@ T\_Cell *pcell}，而\cpp{}没有这方面的要求。}，并为结构体前置�
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={radio/domain/Cell.h}]
+\begin{c++}[caption={\ttfamily{radio/domain/Cell.h}}]
 #ifndef AQTYER_023874_NMHSFHKE_7432378293
 #define AQTYER_023874_NMHSFHKE_7432378293
 
+#include <cut/base/BaseTypes.h>
+
 typedef struct T_Cell
 {
-    WORD16 wCellId;
-    WORD32 dwDlArfcn;
+    U16 cellId;
+    U16 dlArfcn;
 } T_Cell;
 
 #endif
@@ -1009,11 +1319,11 @@ typedef struct T_Cell
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={mockcpp/ApiHook.h}]
+\begin{c++}[caption={\ttfamily{mockcpp/ApiHook.h}}]
 #ifndef OIWTQNVHD_10945_HDFIUE_23975_HFGA
 #define OIWTQNVHD_10945_HDFIUE_23975_HFGA
 
-#include "mockcpp/JmpOnlyApiHook.h"
+#include <mockcpp/JmpOnlyApiHook.h>
 
 struct ApiHook
 {
@@ -1031,7 +1341,7 @@ private:
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={mockcpp/ApiHook.h}]
+\begin{c++}[caption={\ttfamily{mockcpp/ApiHook.h}}]
 #ifndef OIWTQNVHD_10945_HDFIUE_23975_HFGA
 #define OIWTQNVHD_10945_HDFIUE_23975_HFGA
 
@@ -1051,9 +1361,9 @@ private:
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={mockcpp/ApiHook.cpp}]
-#include "mockcpp/ApiHook.h"
-#include "mockcpp/JmpOnlyApiHook.h"
+\begin{c++}[caption={\ttfamily{mockcpp/ApiHook.cpp}}]
+#include <mockcpp/ApiHook.h>
+#include <mockcpp/JmpOnlyApiHook.h>
 
 struct ApiHookImpl
 {
@@ -1094,16 +1404,16 @@ This}的桥接，在头文件中解除了对\ascii{JmpOnlyApiHook}的依赖，�
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={oss/OssSender.h}]
+\begin{c++}[caption={\ttfamily{oss/OssSender.h}}]
 #ifndef HGGAOO_4611330_NMSDFHW_86794303_HJHASI
 #define HGGAOO_4611330_NMSDFHW_86794303_HJHASI
 
-#include "pub_typedef.h"
-#include "pub_oss.h"
-#include "oss_comm.h"
-#include "pub_commdef.h"
-#include "base/Assertions.h"
-#include "base/Status.h"
+#include <pub/typedef.h>
+#include <pub/oss.h>
+#include <pub/commdef.h>
+#include <oss/comm.h>
+#include <cut/base/Assertions.h>
+#include <cut/base/Status.h>
 
 struct OssSender
 {
@@ -1115,8 +1425,8 @@ struct OssSender
     template <typename MSG>
     Status send(const U16 eventId, const MSG& msg)
     {
-        DCM_ASSERT_TRUE(OSS_SendAsynMsg(eventId, &msg, sizeof(msg), commType,(PID*)&pid) == OSS_SUCCESS); 
-        return DCM_SUCCESS;
+        CUB_ASSERT_TRUE(OSS_SendAsynMsg(eventId, &msg, sizeof(msg), commType,(PID*)&pid) == OSS_SUCCESS); 
+        return CUB_SUCCESS;
     }
 
 private:
@@ -1134,12 +1444,12 @@ private:
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={oss/OssSender.h}]
+\begin{c++}[caption={\ttfamily{oss/OssSender.h}}]
 #ifndef HGGAOO_4611330_NMSDFHW_86794303_HJHASI
 #define HGGAOO_4611330_NMSDFHW_86794303_HJHASI
 
-#include "base/Status.h"
-#include "base/BaseTypes.h"
+#include <cut/base/Status.h>
+#include <cut/base/BaseTypes.h>
 
 struct PID;
 
@@ -1168,7 +1478,26 @@ private:
 \end{c++}
 \end{leftbar}
 
-识别哪些与泛型相关，哪些与泛型无关的知识，并解开此类编译时依赖是\cpp{}程序员的必备之技。
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{oss/OssSender.cpp}}]
+#include <oss/OssSender>
+#include <pub/typedef.h>
+#include <pub/oss.h>
+#include <pub/commdef.h>
+#include <oss/comm.h>
+#include <cut/base/Assertions.h>
+
+Status OssSender::send(const U16 eventId, const void* msg, size_t size)
+{
+    CUB_ASSERT_TRUE(OSS_SendAsynMsg(eventId, &msg, sizeof(msg), commType,(PID*)&pid) == OSS_SUCCESS); 
+    return CUB_SUCCESS;
+}
+\end{c++}
+\end{leftbar}
+
+识别哪些与泛型相关，哪些与泛型无关的知识，并解开此类编译时依赖是\cpp{}程序员的必备之技。此外，从这个例子看，仅仅为了使用\ascii{OSS\_SendAsynMsg}一个函数，缺包含了整个\ascii{oss}子系统，这是一种典型的物理设计的坏味道。
+
+从另外一个角度看，\ascii{OssSender}的存在，其一让应用隔离了对平台的依赖，同时得到了物理依赖较小的设计。推而广之，良好的逻辑设计，往往能得到一个依赖最小的物理设计。
 
 \begin{advise}
 适时选择显式模板实例化\ascii{(Explicit Template Instantiated)}，降低模板的编译时依赖。
@@ -1180,7 +1509,7 @@ private:
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={quantity/Quantity.h}]
+\begin{c++}[caption={\ttfamily{quantity/Quantity.h}}]
 #ifndef HGGQMVJK_892302_NGFSLEU_796YJ_GF5284
 #define HGGQMVJK_892302_NGFSLEU_796YJ_GF5284
 
@@ -1212,12 +1541,12 @@ private:
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={quantity/Length.h}]
+\begin{c++}[caption={\ttfamily{quantity/Length.h}}]
 #ifndef TYIW7364_JG6389457_BVGD7562_VNW12_JFH
 #define TYIW7364_JG6389457_BVGD7562_VNW12_JFH
  
-#include "quantity/Quantity.h"
-#include "quantity/LengthUnit.h"
+#include <quantity/Quantity.h>
+#include <quantity/LengthUnit.h>
 
 typedef Quantity<LengthUnit> Length;
 
@@ -1226,12 +1555,12 @@ typedef Quantity<LengthUnit> Length;
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={quantity/Volume.h}]
+\begin{c++}[caption={\ttfamily{quantity/Volume.h}}]
 #ifndef HG764MD_NKGJKDSJLD_RY64930_NVHF977E
 #define HG764MD_NKGJKDSJLD_RY64930_NVHF977E
  
-#include "quantity/Quantity.h"
-#include "quantity/VolumeUnit.h"
+#include <quantity/Quantity.h>
+#include <quantity/VolumeUnit.h>
 
 typedef Quantity<VolumeUnit> Volume;
 
@@ -1246,7 +1575,7 @@ typedef Quantity<VolumeUnit> Volume;
 如何控制和隔离\ascii{Quantity, LengthUnit, VolumeUnit}变化的蔓延，而避免大部分的客户代码重新编译，从而与客户彻底解偶呢？可以通过显式模板实例化将模板实现从头文件中剥离出去，从而避免了不必要的依赖。
 
 \begin{leftbar}
-\begin{c++}[caption={quantity/Quantity.h}]
+\begin{c++}[caption={\ttfamily{quantity/Quantity.h}}]
 #ifndef HGGQMVJK_892302_NGFSLEU_796YJ_GF5284
 #define HGGQMVJK_892302_NGFSLEU_796YJ_GF5284
 
@@ -1269,7 +1598,7 @@ private:
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={quantity/Quantity.tcc}]
+\begin{c++}[caption={\ttfamily{quantity/Quantity.tcc}}]
 #ifndef FKJHJT68302_NVGKS97474_YET122_HEIW8565
 #define FKJHJT68302_NVGKS97474_YET122_HEIW8565
 
@@ -1297,11 +1626,11 @@ bool Quantity<Unit>::operator!=(const Quantity& rhs) const
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={quantity/Length.h}]
+\begin{c++}[caption={\ttfamily{quantity/Length.h}}]
 #ifndef TYIW7364_JG6389457_BVGD7562_VNW12_JFH
 #define TYIW7364_JG6389457_BVGD7562_VNW12_JFH
 
-#include "quantity/Quantity.h"
+#include <quantity/Quantity.h>
 
 struct LengthUnit;
 struct Length : Quantity<LengthUnit> {};
@@ -1311,20 +1640,20 @@ struct Length : Quantity<LengthUnit> {};
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={quantity/Length.cpp}]
-#include "quantity/Quantity.tcc"
-#include "quantity/LengthUnit.h"
+\begin{c++}[caption={\ttfamily{quantity/Length.cpp}}]
+#include <quantity/Quantity.tcc"
+#include <quantity/LengthUnit.h>
 
 template struct Quantity<LengthUnit>;
 \end{c++}
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={quantity/Volume.h}]
+\begin{c++}[caption={\ttfamily{quantity/Volume.h}}]
 #ifndef HG764MD_NKGJKDSJLD_RY64930_NVHF977E
 #define HG764MD_NKGJKDSJLD_RY64930_NVHF977E
 
-#include "quantity/Quantity.h"
+#include <quantity/Quantity.h>
 
 struct VolumeUnit;
 struct Volume : Quantity<VolumeUnit> {};
@@ -1334,9 +1663,9 @@ struct Volume : Quantity<VolumeUnit> {};
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={quantity/Volume.cpp}]
-#include "quantity/Quantity.tcc"
-#include "quantity/VolumeUnit.h"
+\begin{c++}[caption={\ttfamily{quantity/Volume.cpp}}]
+#include <quantity/Quantity.tcc"
+#include <quantity/VolumeUnit.h>
 
 template struct Quantity<VolumeUnit>;
 \end{c++}
@@ -1358,11 +1687,11 @@ template struct Quantity<VolumeUnit>;
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={quantity/Length.h}]
+\begin{c++}[caption={\ttfamily{quantity/Length.h}}]
 #ifndef TYIW7364_JG6389457_BVGD7562_VNW12_JFH
 #define TYIW7364_JG6389457_BVGD7562_VNW12_JFH
 
-#include "quantity/Quantity.h"
+#include <quantity/Quantity.h>
 
 struct LengthUnit;
 typedef Quantity<LengthUnit> Length;
@@ -1373,11 +1702,11 @@ typedef Quantity<LengthUnit> Length;
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={quantity/Length.h}]
+\begin{c++}[caption={\ttfamily{quantity/Length.h}}]
 #ifndef TYIW7364_JG6389457_BVGD7562_VNW12_JFH
 #define TYIW7364_JG6389457_BVGD7562_VNW12_JFH
 
-#include "quantity/Quantity.h"
+#include <quantity/Quantity.h>
 
 struct LengthUnit;
 struct Length : Quantity<LengthUnit> {};
