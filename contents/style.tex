@@ -4,7 +4,7 @@
 \end{savequote}
 
 \chapter{代码风格} 
-\label{ch:physical-design}
+\label{ch:coding-style}
 
 \section{开发环境}
 
@@ -45,10 +45,10 @@
 强烈推荐遵循良好的代码注释的规范和最佳实践；倡导整洁代码，代码自解释；即使在特殊场景需要注释时，应使用标准的英文注释。
 
 \begin{regulation}
-团队统一配置\ascii{IDE}的\ascii{TAB}为相同数目的空格，坚决抵制使用\ascii{TAB}对齐代码。\footnote{\ascii{TAB}一般配置为2或4个空格，所有的编辑器都提供了类似的配置接口。}
+团队统一配置\ascii{IDE}的\ascii{TAB}为相同数目的空格，坚决抵制使用\ascii{TAB}对齐代码。
 \end{regulation}
 
-因各种编辑器解释\ascii{TAB}的长度存在不一致，如果使用\ascii{TAB}对齐代码，可能会使代码缩进混乱不堪。
+因各种编辑器解释\ascii{TAB}的长度存在不一致，如果使用\ascii{TAB}对齐代码，可能会使代码缩进混乱不堪。\footnote{\ascii{TAB}一般配置为2或4个空格，所有的编辑器都提供了类似的配置接口。}
 
 \end{content}
 
@@ -83,7 +83,7 @@
 每个文件末尾都应该有且仅有一行空行。
 \end{regulation}
 
-如果使用\ascii{Eclipse}，在创建新文件时自动地在文件末添加一行空行；但诸如\ascii{Visual C++}等情况下，则需要程序员在文件末自行手动地添加一行空行。这样做可以最大化地实现代码的可移植性，避免某些编译器因缺少空行而产生警告信息。
+如果使用\ascii{Eclipse}，在创建新文件时自动地在文件末添加一行空行；但诸如\ascii{Visual }\cpp{}等情况下，则需要程序员在文件末自行手动地添加一行空行。这样做可以最大化地实现代码的可移植性，避免某些编译器因缺少空行而产生警告信息。
 
 \begin{regulation}
 每一行的代码或注释不得超过\ascii{80}列；否则将其拆分为若干行，并保持适当缩进，保证排版整洁漂亮。

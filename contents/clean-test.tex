@@ -29,15 +29,33 @@
 
 这是流行的\ascii{BDD，行为驱动测试}命名规范，当阅读测试用例时，或当测试失败时，这样的命名风格非常有利于行为的描述。
 
-摒弃原始的\ascii{TestXXX}的风格吧，因为它不能清晰表达\ascii{TDD}的意图。
-
 \begin{regulation}
 每一个测试一个概念
 \end{regulation}
 
-这是\ascii{SRP}在测试用例中的体现，当测试用例失败的时候，能够清晰地知道测试失败的原因。
+这是\ascii{SRP}在测试用例中的体现，当测试用例失败的时候，能够清晰地知道测试失败的原因。一个概念往往只会有一个断言来描述，出现数目众多的断言往往违背了此规则。
 
-一个概念往往只会有一个断言来描述，出现数目众多的断言往往违背了此规则。
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/core/TestCaseSpec.cpp}}]
+TEST("when test case assert success")
+{
+    run([] { ASSERT_THAT(1, is(1)); });
+    ASSERT_THAT(collector->numOfFail, is(0));
+}
+
+TEST("when test case assert fail")
+{
+    run([] { ASSERT_THAT(1, is(2)); });
+    ASSERT_THAT(collector->numOfFail, is(1));
+}
+
+TEST("when test case throw std::exception")
+{
+    run([] { throw std::exception(); });
+    ASSERT_THAT(collector->numOfFail, is(1));
+}
+\end{c++}
+\end{leftbar}
 
 \begin{regulation}
 将具有相同测试环境的用例放在同一个测试套件中
@@ -45,17 +63,176 @@
 
 将构造测试环境及清理测试环境的代码分别放在\ascii{Setup}及\ascii{Teardown}中，可以消除重复的代码，实现代码的最大可复用性。
 
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/core/TestOptionsSpec.cpp}}]
+FIXTURE(FilterTest)
+{
+    TestOptions &options = RUNTIME(TestOptions);
+
+    TEARDOWN()
+    {
+        options.clear();
+    }
+
+    template <typename Asserter>
+    void given_options_then(const std::vector<std::string>& config, Asserter asserter)
+    {
+        cpo::Args args(config);
+        options.parse(args.argc(), args.argv());
+        asserter();
+    }
+
+    TEST("can filter")
+    {
+        given_options_then({"./exec", "-f=fake"}, [this]{
+            ASSERT_THAT(options.filter("fake"), be_true());
+        });
+    }
+
+    TEST("can't filter")
+    {
+        given_options_then({"./exec", "-f=fake"}, [this]{
+            ASSERT_THAT(options.filter("face"), be_false());
+        });
+    }
+
+    TEST("any of test case")
+    {
+        given_options_then({"./exec", "-f=fake::.*"}, [this]{
+            ASSERT_THAT(options.filter("fake::face to north"), be_true());
+        });
+    }
+};
+\end{c++}
+\end{leftbar}
+
 \begin{regulation}
 测试应该像文档一样清晰
 \end{regulation}
 
 测试用例是理解系统行为的最佳途径，也是最实时、最权威的文档。
 
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cut/util/XmlNodeSpec.cpp}}]
+FIXTURE(XmlBuilderTest)
+{
+    XmlNode node("bookstore");
+    XmlBuilder builder(&node);
+
+    void expectXml(const std::string& expected)
+    {
+        ASSERT_THAT(node.toXml(), is(expected));
+    }
+
+    TEST("at initial: root node")
+    {
+        expectXml("<bookstore/>");
+    }
+
+    TEST("append 1 child")
+    {
+        builder.addChild("book");
+
+        expectXml("<bookstore>"
+                  "<book/>"
+                  "</bookstore>");
+    }
+
+    TEST("append 1 child && 1 attribute")
+    {
+        builder.addChild("book");
+        builder.addAttribute("genre", "fantasy");
+
+        expectXml("<bookstore>"
+                  "<book genre='fantasy'/>"
+                  "</bookstore>");
+    }
+
+    TEST("append 1 child && 1 value")
+    {
+        builder.addChild("book");
+        builder.addValue("This is about wolf Legacy!");
+
+        expectXml("<bookstore>"
+                  "<book>"
+                  "This is about wolf Legacy!"
+                  "</book>"
+                  "</bookstore>");
+    }
+
+    TEST("append 1 child && 1 sibling")
+    {
+        builder.addChild("book");
+        builder.addSibling("book");
+
+        expectXml("<bookstore>"
+                  "<book/>"
+                  "<book/>"
+                  "</bookstore>");
+    }
+}
+\end{c++}
+\end{leftbar}
+
 \begin{regulation}
 测试更应该是像一个例子
 \end{regulation}
 
-测试不仅仅为了测试而测试，更重要的是对系统行为的描述。
+测试不仅仅为了测试而测试，更重要的是对系统行为的描述。这是一段描述\ascii{Transaction DSL}的一段测试用例，组织相当漂亮，通过用例可以很容易地了解系统的行为。
+
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{trans-dsl/sched/SequentialSpec.cpp}}]
+// @fixture(tags="seq")
+FIXTURE(Sequential)
+{
+   __transaction
+   ( __sequential
+       ( __wait(1)
+       , __wait(2))
+   )trans;
+
+   SETUP()
+   {
+      ASSERT_EQ(CONTINUE, trans.start());
+   }
+
+   // @test(id="event-1")
+   TEST("after recv event-1, should return CONTINUE")
+   {
+      ASSERT_EQ(CONTINUE, trans.handleEvent(EVENT(1)));
+   }
+
+   TEST("after recv event-2, should return UNKNOWN_EVENT")
+   {
+      ASSERT_EQ(UNKNOWN_EVENT, trans.handleEvent(EVENT(2)));
+   }
+
+   // @test(depends="event-1")
+   TEST("after recv event-1, if recv event-2, should return SUCCESS")
+   {
+      ASSERT_EQ(SUCCESS, trans.handleEvent(EVENT(2)));
+   }
+
+   // @test(id="stop")
+   TEST("after stop, should return SUCCESS")
+   {
+      ASSERT_EQ(FORCE_STOPPED, trans.stop());
+   }
+
+   // @test(depends="stop")
+   TEST("after stop, if recv event-1, should return UNKNOWN_EVENT")
+   {
+      ASSERT_EQ(UNKNOWN_EVENT, trans.handleEvent(EVENT(1)));
+   }
+
+   TEST("after kill, if recv event-1, should return UNKNOWN_EVENT")
+   {
+      trans.kill();
+      ASSERT_EQ(UNKNOWN_EVENT, trans.handleEvent(EVENT(1)));
+   }
+};
+\end{c++}
+\end{leftbar}
 
 \begin{regulation}
 测试用例中不应该存在复杂的循环、条件控制语句
@@ -68,5 +245,71 @@
 \end{regulation}
 
 根据领域问题，设计特定领域描述语言\ascii{DSL}，将改善用例的可读性和维护性。
+
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{robot/RobotCleanerSpec.cpp}}]
+FIXTURE(RobotCleanerSpec)
+{
+    RobotCleaner robot;
+
+    void WHEN_I_send_instruction(Instruction* instruction)
+    {
+        robot.exec(instruction);
+    }
+
+    void THEN_the_robot_cleaner_should_be_in(const Position& position)
+    {
+        ASSERT_THAT(robot.getPosition(), is(position));
+    }
+
+    TEST("at the beginning, the robot should be in at the initial position")
+    {
+        ASSERT_THAT(robot.getPosition(), is(Position(0, 0, NORTH)));
+    }
+
+    TEST("left instruction")
+    {
+        WHEN_I_send_instruction(left());
+        THEN_the_robot_cleaner_should_be_in(Position(0, 0, WEST));
+    }
+
+    TEST("right instruction")
+    {
+        WHEN_I_send_instruction(right());
+        THEN_the_robot_cleaner_should_be_in(Position(0, 0, EAST));
+    }
+
+    TEST("forward instruction")
+    {
+        WHEN_I_send_instruction(forward());
+        THEN_the_robot_cleaner_should_be_in(Position(0, 1, NORTH));
+    }
+
+    TEST("backward instruction")
+    {
+        WHEN_I_send_instruction(backward());
+        THEN_the_robot_cleaner_should_be_in(Position(0, -1, NORTH));
+    }
+
+    TEST("round instruction")
+    {
+        WHEN_I_send_instruction(round());
+        THEN_the_robot_cleaner_should_be_in(Position(0, 0, SOUTH));
+    }
+
+    TEST("sequential instruction")
+    {
+        WHEN_I_send_instruction(sequential(left(), forward(), round()));
+        THEN_the_robot_cleaner_should_be_in(Position(-1, 0, EAST));
+    }
+
+    TEST("repeat instruction")
+    {
+        WHEN_I_send_instruction(repeat(forward_n(2), 2));
+        THEN_the_robot_cleaner_should_be_in(Position(0, 4, NORTH));
+    }
+};
+\end{c++}
+\end{leftbar}
 
 \end{content}

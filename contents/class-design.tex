@@ -42,7 +42,7 @@
 \ascii{TransData}必须实现对基本数据类型的成员变量的初始化，否则行为未定义。至于泛型类型\ascii{T}则要求必须存在默认构造函数，否则编译失败。
 
 \begin{leftbar}
-\begin{c++}[caption={base/TransData.h}]
+\begin{c++}[caption={\ttfamily{cub/base/TransData.h}}]
 #ifndef JLGOUIW12975_VBATQ75656_YRTQKS897564_NVGSSJ
 #define JLGOUIW12975_VBATQ75656_YRTQKS897564_NVGSSJ
 
@@ -101,11 +101,11 @@ TransData<T>::TransData()
 \ascii{RAII(Resource acquisition is initialization)}是一种有用的技术，可实现了资源的安全管理功能。
 
 \begin{leftbar}
-\begin{c++}[caption={thread/Lock.h}]
+\begin{c++}[caption={\ttfamily{cub/thread/Lock.h}}]
 #ifndef ITUYIYJL9_067251067_MLBNHKEIOYADMPUO0_NVAXZ
 #define ITUYIYJL9_067251067_MLBNHKEIOYADMPUO0_NVAXZ
 
-#include "thread/mutex.h"
+#include <cub/thread/mutex.h>
 
 struct Lock
 {
@@ -132,7 +132,7 @@ private:
 \ascii{RAII}利用了局部对象的自动销毁的机制，实现资源的自动释放的功能。
 
 \begin{leftbar}
-\begin{c++}[caption={thread/BlockQueue.h}]
+\begin{c++}[caption={\ttfamily{cub/thread/BlockQueue.h}}]
 #ifndef TYOQAMGH2975639_NGGQAOZPY96493950_GFRQA0954
 #define TYOQAMGH2975639_NGGQAOZPY96493950_GFRQA0954
     
@@ -164,7 +164,7 @@ void BlockQueue<T>::push(const T& item)
 可以引入类\ascii{Placement}，完成内存的预先占用，当延迟初始化发生时，在此\ascii{Placement}的原始内存上调用\ascii{placement new}完成对象的延迟构造；并在此原始内存上提供了一层直观的、人性化的操作接口，从而可以很方便地操作被修饰的类型\ascii{T}对象。
 
 \begin{leftbar}
-\begin{c++}[caption={base/Placement.h}]
+\begin{c++}[caption={\ttfamily{cub/base/Placement.h}}]
 #ifndef LKSDFLKE95794_HGYETQ1240NBAZUTY75444_MGHHHH
 #define LKSDFLKE95794_HGYETQ1240NBAZUTY75444_MGHHHH
 
@@ -222,11 +222,11 @@ private:
 我们分别看两个例子。第一个例子，如果存在两个非\ascii{POD}类型，它们被放在\ascii{union}中，只有在延迟初始化时才能决定其真正的类型的构造。
 
 \begin{leftbar}
-\begin{c++}[caption={money/AccountFactory.h}]
+\begin{c++}[caption={\ttfamily{money/AccountFactory.h}}]
 #ifndef QTA85648888_BFGSE9980666_NNNN_YERQ111_AAAA
 #define QTA85648888_BFGSE9980666_NNNN_YERQ111_AAAA
 
-#include <base/BaseTypes.h>
+#include <cub/base/BaseTypes.h>
 
 struct Account;
 
@@ -240,7 +240,7 @@ struct AccountFactory
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={money/AccountFactory.cpp}]
+\begin{c++}[caption={\ttfamily{money/AccountFactory.cpp}}]
 #include <money/LocalAccount.h>
 #include <money/RemoteAccount.h>
 #include <new>
@@ -273,12 +273,12 @@ Account* AccountFactory::create(const U8 type)
 如果一个类包含一个类类型的数组，除非提供数组元素类型的默认构造函数，否则编译失败。使用\ascii{Placement}预先占用数组所需的内存，再在合适的时机再进行延迟初始化，则可以避免了数组元素的默认构造，提升了效率}。
 
 \begin{leftbar}
-\begin{c++}[caption={sensor/SensorRepository.h}]
+\begin{c++}[caption={\ttfamily{sensor/SensorRepository.h}}]
 #ifndef MMMM_66310_JFLA98301OQG7492_MFFAZXXX_RREE
 #define MMMM_66310_JFLA98301OQG7492_MFFAZXXX_RREE
     
-#include <base/Placement.h>
-#include <radio/Sensor.h>
+#include <cub/base/Placement.h>
+#include <sensor/Sensor.h>
     
 struct SensorRepository
 {
@@ -321,7 +321,7 @@ private:
 如果公开了内部成员变量，则违背了信息隐藏机制，这是一种典型的坏味道。相反地，当遇到需要操作遗留系统中\clang{}语言的结构体，需要对其进行封装，并提供相应的成员函数，让其更加符合面向对象的思维。
 
 \begin{leftbar}
-\begin{c++}[caption={base/StructWrapper.h}]
+\begin{c++}[caption={\ttfamily{cub/base/StructWrapper.h}}]
 #ifndef IIU11905749_BVFATQ1_NGFJE8563MCVYYYQQQ_NFG666
 #define IIU11905749_BVFATQ1_NGFJE8563MCVYYYQQQ_NFG666
     
@@ -371,12 +371,12 @@ struct StructWrapper : protected From
 在面对这个问题时，抽象出了\ascii{UsdUnit}类，并提供两个\ascii{static factory method}，以实现对\ascii{UsdUnit}实例生成的控制，并通过宏定义改善了\ascii{API}的可读性和方便性。
 
 \begin{leftbar}
-\begin{c++}[caption={money/UsdUnit.h}]
+\begin{c++}[caption={\ttfamily{money/UsdUnit.h}}]
 #ifndef GGG612990097_BSAWQQQQ_NFGGG_VXXZZZ_76555
 #define GGG612990097_BSAWQQQQ_NFGGG_VXXZZZ_76555
 
-#include "base/Keywords.h"
-#include "money/Amount.h"
+#include <cub/base/Keywords.h>
+#include <money/Amount.h>
 #include <ostream>
 
 DEFINE_ROLE(UsdUnit)
@@ -396,7 +396,7 @@ DEFINE_ROLE(UsdUnit)
 
 \begin{leftbar}
 \begin{c++}[caption={money/UsdUnit.cpp}]
-#include "money/UsdUnit.h"
+#include <money/UsdUnit.h>
 
 namespace
 {
@@ -436,7 +436,7 @@ DEF_USD_UNIT(cent)
 此处提供了一个\ascii{String}的工具类，为了保证禁止生成实例的约束，提供了一个故意没有实现的默认构造函数，从而保证了编译时的安全性。
 
 \begin{leftbar}
-\begin{c++}[caption={util/StringUtil.h}]
+\begin{c++}[caption={\ttfamily{cub/util/StringUtil.h}}]
 #ifndef UURY08453HGYT6574_NBBVGA_EYQIGYFH_GWQAMGY
 #define UURY08453HGYT6574_NBBVGA_EYQIGYFH_GWQAMGY
 
@@ -479,7 +479,7 @@ StringUtil().split("1,2,3", ',');
 为了防止其他人错误地进行值拷贝，常常需要禁止其复制和赋值行为，存在三种典型的技术：
 
 \begin{leftbar}
-\begin{c++}[caption={base/Uncloneable.h}]
+\begin{c++}[caption={\ttfamily{cub/base/Uncloneable.h}]
 #ifndef CCCPLSUE746HNV_NGGWTEEEYYY11857664_NFFFGGG
 #define CCCPLSUE746HNV_NGGWTEEEYYY11857664_NFFFGGG
 
@@ -502,7 +502,7 @@ private:                           \
 或\ascii{private}继承\ascii{Uncloneable}类：
 
 \begin{leftbar}
-\begin{c++}[caption={base/Uncloneable.h}]
+\begin{c++}[caption={\ttfamily{cub/base/Uncloneable.h}}]
 #ifndef CCCPLSUE746HNV_NGGWTEEEYYY11857664_NFFFGGG
 #define CCCPLSUE746HNV_NGGWTEEEYYY11857664_NFFFGGG
 
@@ -522,8 +522,9 @@ private:
 \end{leftbar}
 
 在\cpp{}\ascii{11}中，可以显式地\ascii{delete}掉相应的函数：
+
 \begin{leftbar}
-\begin{c++}[caption={cppunit/Test.h}]
+\begin{c++}[caption={\ttfamily{cut/core/Test.h}}]
 #ifndef UTYWO_TETQHBF774010_NVBDAUTHHF_HH1HHJFTUT_144
 #define UTYWO_TETQHBF774010_NVBDAUTHHF_HH1HHJFTUT_144
     
@@ -547,8 +548,6 @@ struct Test
 
 这时出现了很多技术来解决这方面的问题，对象池技术和\ascii{Flyweight}模式是最常见的技术，例如线程池，数据库连接池，网络连接池等等。
 
-参考实例可参见\ascii{Joshua Bloch}所著的\ascii{《Effective Java》}，规则同样适用于\cpp{}。
-
 \end{content}
 
 \section{继承与多态}
@@ -564,10 +563,11 @@ struct Test
 可以通过\ascii{DEFINE\_ROLE}的宏定义来实现对接口的定义，从而可以消除子类对虚拟析构函数的重复实现。
 
 \begin{leftbar}
-\begin{c++}[caption={base/Role.h}]
+\begin{c++}[caption={\ttfamily{cub/dci/Role.h}}]
 #ifndef HF95EF112_D6C6_4DB0_8C1A_BE5A6CF8E3F1
 #define HF95EF112_D6C6_4DB0_8C1A_BE5A6CF8E3F1
-#include <base/Keywords.h>
+
+#include <cub/base/Keywords.h>
 
 namespace details
 {
@@ -585,11 +585,11 @@ namespace details
 \end{leftbar}
 
 \begin{leftbar}
-\begin{c++}[caption={thread/Callable.h}]
+\begin{c++}[caption={\ttfamily{cub/thread/Callable.h}}]
 #ifndef NVBB1QQAT1838_BZZZAAAIIRUUYWWW887440_HHFF_123
 #define NVBB1QQAT1838_BZZZAAAIIRUUYWWW887440_HHFF_123
 
-#include "base/Role.h"
+#include <cub/base/Role.h>
 
 DEFINE_ROLE(Callable)
 {
@@ -616,7 +616,7 @@ DEFINE_ROLE(Callable)
 
 \begin{leftbar}
 \begin{c++}
-＃include <base/Config.h>
+＃include <cub/base/Config.h>
 
 #if __SUPPORT_FINAL
 # define FINAL final
@@ -665,11 +665,11 @@ DEFINE_ROLE(Callable)
 在子类中改写虚函数时，提供显式的\ascii{override}将改善代码的可读性，更重要的是增强了编译时的安全性检查。
 
 \begin{leftbar}
-\begin{c++}[caption={cppunit/TestDecorator.h}]
+\begin{c++}[caption={\ttfamily{cut/core/TestDecorator.h}}]
 #ifndef NCQEAY2220098666TTRRWWO_WWT2264449880MM_SDQAA
 #define NCQEAY2220098666TTRRWWO_WWT2264449880MM_SDQAA
 
-#include <cppunit/core/Test.h>
+#include <cut/core/Test.h>
 
 struct TestDecorator : Test
 {
@@ -693,7 +693,7 @@ private:
 
 \begin{leftbar}
 \begin{c++}
-#include <infra/base/Config.h>
+#include <cub/base/Config.h>
 
 #if __SUPPORT_VIRTUAL_OVERRIDE
 # define OVERRIDE(...) virtual __VA_ARGS__ override
