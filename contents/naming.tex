@@ -116,11 +116,11 @@
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={thread/Runnable.h}]
+\begin{c++}[caption={\ttfamily{cub/thread/Runnable.h}}]
 #ifndef LJKYIUERUIQ09857983_NVHKJKHA86100494_JGYQPIPWNC
 #define LJKYIUERUIQ09857983_NVHKJKHA86100494_JGYQPIPWNC
 
-#include "base/Keywords.h"
+#include <cub/base/Keywords.h>
 
 // 接口必须是形容词或名词，不允许是动词
 DEFINE_ROLE(Run)
@@ -134,11 +134,11 @@ DEFINE_ROLE(Run)
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption={thread/Runnable.h}]
+\begin{c++}[caption={\ttfamily{cub/thread/Runnable.h}}]
 #ifndef LJKYIUERUIQ09857983_NVHKJKHA86100494_JGYQPIPWNC
 #define LJKYIUERUIQ09857983_NVHKJKHA86100494_JGYQPIPWNC
 
-#include "base/Keywords.h"
+#include <cub/base/Keywords.h>
 
 DEFINE_ROLE(Runnable)
 {
@@ -216,7 +216,7 @@ ControllerForEfficientStorageOfStrings
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption="trans-dsl/listener/MutilEventListener.cpp"]
+\begin{c++}[caption={\ttfamily{cub/trans-dsl/listener/MutilEventListener.cpp}}]
 void MutilEventListener::onEventDone()
 {
     for(int index=0; index!=listeners.size(); index++)
@@ -231,8 +231,8 @@ void MutilEventListener::onEventDone()
 
 正例：
 \begin{leftbar}
-\begin{c++}[caption="trans-dsl/listener/MutilEventListener.cpp"]
-void MutilEventListener::onEventDown()
+\begin{c++}[caption={\ttfamily{cub/trans-dsl/listener/MutilEventListener.cpp}}]
+void MutilEventListener::onEventDone()
 {
     for(int i=0; i!=listeners.size(); i++)
     {
@@ -242,13 +242,29 @@ void MutilEventListener::onEventDown()
 \end{c++}
 \end{leftbar}
 
+使用\ascii{C++11}的\ascii{for-each}特性，可进一步改善设计。
+
+正例：
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cub/trans-dsl/listener/MutilEventListener.cpp}}]
+void MutilEventListener::onEventDone()
+{
+    for(auto& listener : listeners)
+    {
+        listeners.onEventDone();
+    }
+}
+\end{c++}
+\end{leftbar}
+
+
 \begin{regulation}
 程序中每个实体都应该有一个意图明确\ascii{(Intention-Revealing)}的名称
 \end{regulation}
 
 反例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={\ttfamily{game/chess/GameBoard.h}}]
 vector<vector<int> > getThem() 
 {
     vector<vector<int> > list1;
@@ -274,11 +290,14 @@ vector<vector<int> > getThem()
   \eitem{\ascii{list1}就是为了编译通过吗？}
 \end{enum}
 
-换一个好名字之后，并对数据结构进行了简单的封装。
+换一个好名字之后，并对数据结构的实现细节进行了简单的封装，便可以得到一个更合理的设计。
 
 正例：
 \begin{leftbar}
-\begin{c++}
+\begin{c++}[caption={\ttfamily{game/chess/Cell.h}}]
+#ifndef UTJKLFJS_467867_NBHD83562_HETRIO_75649
+#define UTJKLFJS_467867_NBHD83562_HETRIO_75649
+
 #include <vector>
 
 struct Cell
@@ -291,27 +310,43 @@ private:
 
 using Cells = std::vector<Cell>;
 
+#endif
 \end{c++}
 \end{leftbar}
 
-重构之后的效果，抽象和可读性得到了改善\footnote{此处为了方便举例，使用了\cpp{}\ascii{11}的\ascii{for-each, using}别名定义的语法，简化迭代器的操作。}。
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{game/chess/GameBoard.h}}]
+#ifndef JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_N
+#define JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_N
+
+#include <game/chess/Cell.h>
+
+struct GameBoard
+{
+    void collectFlaggedCells(Cells&) const;
+
+private:
+    Cells board;
+};
+
+#endif
+\end{c++}
+\end{leftbar}
 
 \begin{leftbar}
-\begin{c++}
-Cells getFlaggedCells() const
+\begin{c++}[caption={\ttfamily{game/chess/GameBoard.cpp}}]
+void GameBoard::collectFlaggedCells(Cells& cells) const
 {
-    Cells flaggedCells;
-
-    for(auto &cell : gameBoard)
-    { 
+    for(auto &cell : board)
+    {
         if(cell->isFlagged())
         {
-            flaggedCells.push_back(*cell);
+            cells.push_back(cell);
         }
     }
-
-    return flaggedCells;
-}
+}  
+\end{c++}
+\end{leftbar}
 \end{c++}
 \end{leftbar}
 
@@ -319,13 +354,15 @@ Cells getFlaggedCells() const
 避免在名称中携带数据结构的信息
 \end{regulation}
 
+\begin{content}
+
 别用\ascii{accountList，accountArray}指定一组账号，当包含\ascii{Account}的容器不在是一个\ascii{List}或\ascii{Array}的时候，就会引发错误的判断。所以，用\ascii{accountGroup}，\ascii{bunchOfAccounts}，甚至直接使用\ascii{accounts}，情况都会更好一些。
+
+\end{content}
 
 \begin{regulation}
 \ascii{Noise Words are Redundant}，消除噪声后将得到一个更加精准的名字
 \end{regulation}
-
-如\reftbl{redundant-words}所示，消除冗余的噪声，将得到一个更加直观、更漂亮的名字。
 
 \begin{table}[!htb]
 \resizebox{0.95\textwidth}{!} {
@@ -356,8 +393,12 @@ Cells getFlaggedCells() const
   \eitem{\ascii{AppendAble, Closeable, Runnable, Readable, Invokable}}
 \end{enum}
 
+\begin{content}
+
 当使用\ascii{Visitor}，你在使用访问者模式；当使用\ascii{valueOf,
 of}，你在使用静态工厂方法。领域内的命名风格，让领域内的成员更加快捷地理解你的设计意图。
+
+\end{content}
 
 \end{content}
 
@@ -371,13 +412,13 @@ of}，你在使用静态工厂方法。领域内的命名风格，让领域内�
 匈牙利命名曾风靡一时。但是，现代编程语言具有更丰富的类型系统；人们更趋于使用更小的类，更短的函数，让每一个变量定义都在可控的视野范围之内；此外，\ascii{IDE}变得越来智能和强大，匈牙利命名反而变成了一种噪声和肉刺。
 
 \begin{advise}
-摒弃给成员变量加前缀，或后缀
+摒弃给成员变量加前缀，或后缀。
 \end{advise}
 
-为类的成员变量增加\ascii{m\_}前缀同样没有必要。与其在在犹豫加前缀还是不加前缀，不如花费更多的时间将类分解；当类足够小，职责足够单一，使用现代\ascii{IDE}的着色功能，成员变量和普通变量一眼便能识别开来\footnote{\ascii{Eclipse}默认使用蓝色与普通变量区别开来，其他\ascii{IDE}也提供类似的功能。}。
+为类的成员变量增加\ascii{m\_}前缀同样没有必要。与其纠结加前缀还是不加前缀，不如花费更多的时间将类分解；当类足够小，职责足够单一，加之现代\ascii{IDE}的着色功能，成员变量和普通变量一眼便能识别开来\footnote{\ascii{Eclipse}默认使用蓝色与普通变量区别开来，其他\ascii{IDE}也提供类似的功能。}。
 
 \begin{advise}
-摒弃常量的前缀
+摒弃常量的前缀。
 \end{advise}
 
 常量前增加\ascii{k\_}前缀同样没有必要，如果熟悉了大写、下划线隔开的命名风格，\ascii{k\_}前缀完全属于多余。
@@ -390,12 +431,12 @@ of}，你在使用静态工厂方法。领域内的命名风格，让领域内�
 
 反例：
 \begin{leftbar}
-\begin{c++}[caption={trans-dsl/sched/IAction.h}]
+\begin{c++}[caption={\ttfamily{trans-dsl/sched/IAction.h}}]
 #ifndef NVCHKJSD903085_JGOIUUE906894_VBKSJKJA075774
 #define NVCHKJSD903085_JGOIUUE906894_VBKSJKJA075774    
 
-#include "base/Keywords.h"
-#include "base/Status.h"
+#include <cub/base/Keywords.h>
+#include <cub/base/Status.h>
 
 struct TransactionInfo;
 
@@ -408,111 +449,26 @@ DEFINE_ROLE(IAction)
 \end{c++}
 \end{leftbar}
 
-\ascii{Action}前面的\ascii{I}就是一句废话。如果非得在接口与实现中选择，宁愿选择实现中增加\ascii{Impl}后缀。
+正例：
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{trans-dsl/sched/IAction.h}}]
+#ifndef NVCHKJSD903085_JGOIUUE906894_VBKSJKJA075774
+#define NVCHKJSD903085_JGOIUUE906894_VBKSJKJA075774    
+
+#include <cub/base/Keywords.h>
+#include <cub/base/Status.h>
+
+struct TransactionInfo;
+
+DEFINE_ROLE(Action)
+{
+    ABSTRACT(Status exec(const TransactionInfo&));
+};
+
+#endif
+\end{c++}
+\end{leftbar}
+
+如果非得在接口与实现中选择，宁愿选择实现中增加\ascii{Impl}后缀。
 
 \end{content}
-
-\section{注释}
-\begin{content}
-
-\begin{regulation}
-注释不如花费更多时间给实体取一个好名字，让其名副其实
-\end{regulation}
-
-反例：
-\begin{leftbar}
-\begin{c++}
-int time; // elapsed time in days
-\end{c++}
-\end{leftbar}
-
-正例：
-\begin{leftbar}
-\begin{c++}
-int elapsedTimeInDays;
-\end{c++}
-\end{leftbar}
-
-注释应成为一种羞耻的活动，当需要添加注释的时候，往往是改善设计的最好时机。
-
-\begin{regulation}
-消除所有没有必要的注释
-\end{regulation}
-
-没有携带任何信息量的注释都是没有必要的。如下列的注释，维护它简直就是一种巨大的包袱，有时候它的存在就像一个笑话。它就像在挑战读者的智商，谁都知道它是一个构造函数。
-
-反例：
-\begin{leftbar}
-\begin{c++}
-/**
- * Constructor
- */
-InvokedAtMost(const unsigned int times);
-
-/**
- * @param Invocation
- * @return bool
- */
-bool matches(const Invocation& inv) const;
-\end{c++}
-\end{leftbar}
-
-\begin{regulation}
-消除所有误导性、过时的、与设计实现不匹配的注释
-\end{regulation}
-
-如果注释和代码已经失去匹配，意图甚至是相反的。这样的注释如果继续存在，贻害的肯定不止一个人。“假如代码和注释不一致，那么很可能两者都是错误的”，\ascii{Norm Schryer}形象地描述了不一致的注释给代码维护者带来的困扰。
-
-\begin{regulation}
-消除所有日志型、归属、签名的注释
-\end{regulation}
-
-修正一个\ascii{bug}时，都需要在函数头的注释表中记录被次修改的内容。放弃这种“好”习惯吧，请将这些详细的信息提交给源代码控制系统，那里是此类注释最好的归所。
-
-\begin{regulation}
-消除所有\ascii{//end if, //end while, //end for, // end try}的注释
-\end{regulation}
-
-因为逻辑太过于冗长、复杂，又为了增强可读性，往往在花括号后面标记\ascii{//end if, //end while, //end for, // end try}，这往往是简化表达式、提取函数的最佳时机。
-
-\begin{regulation}
-已经被注释掉的代码，应该立即删除
-\end{regulation}
-
-不要珍惜这些冗余的代码，害怕丢掉这些代码而买不到后悔药。你要相信，从源代码控制系统中追回这份被删除的代码易如反掌。
-
-\begin{regulation}
-在需要注释的时候，一定要加注释
-\end{regulation}
-
-因公司版权的保护，需要增加版权法律信息注释\footnote{发布开源代码时，也常常需要增加必要的\ascii{GNU, BSD等}公共许可证}。幸运的是，这类问题可以通过代码模板轻松解决，不会成为造成程序员的任何负担。
-
-在已经尽全力也无法用代码表述清楚时，增加必要的注释会使代码更加容易被别人理解和维护。在这些场景下，注释将成为我们最后一根救命稻草。
-
-\begin{enum}
-  \eitem{代码无法明确的意图也需要增加注释}
-  \eitem{如果在代码中存在特殊的陷阱、实现手法等情况，此时注释变得尤为宝贵}
-\end{enum}
-
-例如，当操作复杂的位运算时，提供比特位的内存映像的注解，将有利于加快读者阅读代码的速度。
-
-正例：
-\begin{leftbar}
-\begin{c++}
-// Fast version of "hash = (65599 * hash) + c"
-hash = (hash << 6) + (hash << 16) - hash + c;
-\end{c++}
-\end{leftbar}
-
-当定义难以理解的正则表达式时，提供更直观的格式说明，同样可以改善对代码的理解。
-
-正例：
-\begin{leftbar}
-\begin{c++}
-// kk::mm::ss, MM dd, yyyy
-std::string timePattern = "\\d{2}:\\d{2}:\\d{2}, \\d{2} \\d{2}, \\d{4}";
-\end{c++}
-\end{leftbar}
-
-\end{content}
-

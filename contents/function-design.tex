@@ -2,8 +2,6 @@
 \ascii{Premature optimization is the root of all evil.}
 \qauthor{\ascii{– Donald Knuth}}
 
-\ascii{On the other hand, we cannot ignore efficiency.}
-\qauthor{\ascii{– Jon Bentley}}
 \end{savequote}
 
 \chapter{函数设计}
@@ -47,47 +45,46 @@
 
 正如\ascii{Bob}大叔提到的那样: 程序就像是一系列的以\ascii{TO}起头的段落，每一段落都描述了当前抽象层次的逻辑，并引用下一抽象层次的，以\ascii{TO}开头的段落。
 
-下例虽然以\ascii{Java}为例，但重点没有偏离，规则同样适用于\clang{}/\cpp{}。
-
+反例：
 \begin{leftbar}
-\begin{java}[caption={java.util.List}]
-public class List<E> {
-   public void add(E element) {
-      if (!readOnly) {
-         int newSize = size + 1;
-         if (newSize > elements.length) {
-            Object[] newElements =
-               new Object[elements.length + 10];
+\begin{c++}[caption={\ttfamily{cub/container/List.h}}]
+template <typename E>
+void List<E>::add(const E& e) 
+{
+    if (!readOnly) 
+    {
+        int newSize = size + 1;
+        if (newSize > elements.length) 
+        {
+            E* newElements = new E[elements.length + 10];
             for (int i = 0; i < size; i++)
-               newElements[i] = elements[i];
+                newElements[i] = elements[i];
+
+            delete [] elements;
             elements = newElements;
-         }
-         elements[size++] = element;
-      }
-   }
+        }
+        elements[size++] = e;
+    }
 }
-\end{java}
+\end{c++}
 \end{leftbar}
 
 提取函数之后，使算法的骨骼显而易见。
 
+正例：
 \begin{leftbar}
-\begin{java}[caption={java.util.List}]
-public class List<E> {
-   public void add(E element) {
-      if (readOnly)
-         return;
-      
-      if (atCapacity())
-         grow();
-      
-      addElement(element);
-   }
+\begin{c++}[caption={\ttfamily{cub/container/List.h}}]
+template <typename E>
+void List<E>::add(const E& element) 
+{
+    if (readOnly)
+        return;
+    if (atCapacity())
+        grow();
+    addElement(element);
 }
-\end{java}
+\end{c++}
 \end{leftbar}
-
-提取函数往往受到性能偏执狂的抨击，他们认为过多的函数提取将成为性能的主要瓶颈。\ascii{2-8}原则将彻底击垮所有不靠谱的言论，与其纠结于函数调用的开销，不如花费更多的时间去优化和改善那些至关重要的算法和关键代码。
 
 \begin{regulation}
 检查参数的有效性
@@ -141,18 +138,20 @@ Thermometer::newInstance(CELSIUS);
 
 \begin{leftbar}
 \begin{c++}[caption={io/ObjectOutputStream.h}]
-#ifndef JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
-#define JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
+#ifndef JCCC_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
+#define JCCC_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
 
-struct ObjectOutputStream
+#include <cut/dci/Role.h>
+
+DEFINE_ROLE(ObjectOutputStream)
 {
-    void write(bool);
-    void write(char);
-    void write(short);
-    void write(int);
-    void write(long);
-    void write(float);
-    void write(double);
+    ABSTRACT(void write(bool));
+    ABSTRACT(void write(char));
+    ABSTRACT(void write(short));
+    ABSTRACT(void write(int));
+    ABSTRACT(void write(long));
+    ABSTRACT(void write(float));
+    ABSTRACT(void write(double));
 };
 
 #endif
@@ -163,18 +162,20 @@ struct ObjectOutputStream
 
 \begin{leftbar}
 \begin{c++}[caption={io/ObjectOutputStream.h}]
-#ifndef JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
-#define JAAA_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
+#ifndef JCCC_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
+#define JCCC_1295_BBVBAA_GFYQQPPAAMZZ0092444_NDFQQAA
 
-struct ObjectOutputStream
+#include <cut/dci/Role.h>
+
+DEFINE_ROLE(ObjectOutputStream)
 {
-    void writeBool(bool);
-    void writeChar(char);
-    void writeShort(short);
-    void writeInt(int);
-    void writeLong(long);
-    void writeFloat(float);
-    void writeDouble(double);
+    ABSTRACT(void writeBool(bool));
+    ABSTRACT(void writeChar(char));
+    ABSTRACT(void writeShort(short));
+    ABSTRACT(void writeInt(int));
+    ABSTRACT(void writeLong(long));
+    ABSTRACT(void writeFloat(float));
+    ABSTRACT(void writeDouble(double));
 };
 
 #endif
@@ -193,28 +194,29 @@ struct ObjectOutputStream
 
 反例：
 \begin{leftbar}
-\begin{java}
-String outputDir = ctxt.getOptions().getScratchDir().getAbsolutePath();
-\end{java}
+\begin{c++}
+std::string outputDir = ctxt.getOptions().getScratchDir().getAbsolutePath();
+\end{c++}
 \end{leftbar}
 
-本例虽然使用\ascii{Java}语言编写，但这不影响对火车失事问题的理解。如果其调用链如果某一环节出现了问题，则整个调用将出现失败。这类串联的调用违反了\ascii{Demeter}法则，\ascii{ctxt}对象包含了多个选项，每个选项中存在一个临时目录，每个目录都有一个绝对路径，所有的知识都毫无保留地暴露给了用户。
+如果其调用链如果某一环节出现了问题，则整个调用将出现失败。这类串联的调用违反了\ascii{Demeter}法则，\ascii{ctxt}对象包含了多个选项，每个选项中存在一个临时目录，每个目录都有一个绝对路径，所有的知识都毫无保留地暴露给了用户。
 
 仔细分析一下代码，再看看其中一个模块是如何使用这个\ascii{outputDir}的。
 
 \begin{leftbar}
-\begin{java}
-String outFile = outputDir + File.SEPERATOR + className + ".class";
-BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outFile));
-\end{java}
+\begin{c++}
+std::string outFile = outputDir + File::SEPERATOR + fileName;
+FileOutputStream ss(outFile);
+\end{c++}
 \end{leftbar}
 
-所有的一切都是为了创建指定名称的临时文件，理想的实现应该将所有本应该隐藏的知识归并到\ascii{ctxt}中实现。
+所有的一切都是为了创建指定名称的临时文件，理想的实现应该将所有本应该隐藏的知识归并到\ascii{ctxt}中实现，一则将职责划分到合理的位置上，二则隐藏了实现的细节。
 
 正例：
 \begin{leftbar}
 \begin{c++}
-BufferedOutputStream bos = ctxt.createScratchFileStream(className);
+FileOutputStream ss;
+ctxt.readScratchFile(ss, file);
 \end{c++}
 \end{leftbar}
 

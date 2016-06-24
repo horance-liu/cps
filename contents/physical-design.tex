@@ -485,7 +485,7 @@ extern "C" {
 #endif
 
 // 错误地将include放在了extern "C"中
-#include <oss_def.h>
+#include <oss/def.h>
 
 void* oss_alloc(size_t);
 void  oss_free(void*);
@@ -564,13 +564,52 @@ void  oss_free(void*);
 \end{c++}
 \end{leftbar}
 
+可以使用实用宏，消除代码重复。
+
+正例：
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{oss/oss\_memery.h}}]
+#ifndef HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8
+#define HF0916DFB_1CD1_4811_B82B_9B8EB1A007D8
+    
+#include <oss/def.h>
+#include <cub/base/ExternC.h>
+
+EXTERN_STDC_BEGIN
+
+void* oss_alloc(size_t);
+void  oss_free(void*);
+
+EXTERN_STDC_END
+
+#endif
+\end{c++}
+\end{leftbar}
+
+其中，
+
+\begin{leftbar}
+\begin{c++}[caption={\ttfamily{cub/base/ExternC.h}}]
+#ifndef HF90C74A1_842B_49B0_8B86_4A2A23AE28C3
+#define HF90C74A1_842B_49B0_8B86_4A2A23AE28C3
+
+#ifdef __cplusplus
+    #define EXTERN_STDC_BEGIN extern "C" {
+    #define EXTERN_STDC_END  }
+#else
+    #define EXTERN_STDC_BEGIN
+    #define EXTERN_STDC_END
+#endif
+
+#endif
+\end{c++}
+\end{leftbar}
+
 \begin{advise}
-拒绝创建巨型头文件，将所有实体声明都放到头文件中
+拒绝创建巨型头文件，将所有实体声明都放到头文件中。
 \end{advise}
 
-不要把所有的宏、\ascii{const}常量、函数声明、类定义都要放在头文件中，而仅仅将外部依赖的实体声明放到头文件中。
-
-实现文件也是一种信息隐藏的惯用技术，如果一些程序的实体不对外所依赖，则放在自己的实现文件中，一则可降低依赖关系，二则实现更好的信息隐藏。
+不要把所有的宏、\ascii{const}常量、函数声明、类定义都要放在头文件中，而仅仅将外部依赖的实体声明放到头文件中。实现文件也是一种信息隐藏的惯用技术，如果一些程序的实体不对外所依赖，则放在自己的实现文件中，一则可降低依赖关系，二则实现更好的信息隐藏。
 
 巨型头文件必然造成了巨大的编译时依赖，不仅仅带来巨大的编译时开销，更重要的是这样的设计将太多的实现细节暴露给用户，导致后续版本兼容性的问题，阻碍了头文件进一步演进、修改、扩展的可能性，从而失去了软件的可扩展性。
 
@@ -1675,7 +1714,16 @@ template struct Quantity<VolumeUnit>;
 
 另外，\ascii{Length.h}对\ascii{LengthUnit}的依赖关系也简化为声明依赖，而对其真正的编译时依赖，也控制在模板实例化的时刻，即在\ascii{Length.cpp}内部。
 
-\ascii{LenghtUnit, VolumeUnit的变化}，及其\ascii{Quantity.tcc}实现细节的变化，被完全地控制在\ascii{Length.cpp, Volume.cpp}内部。
+\ascii{LenghtUnit, VolumeUnit的变化}，及其\ascii{Quantity.tcc}实现细节的变化，被完全地控制在\ascii{Length.cpp, Volume.cpp}内部， \ref{fig:explict-template-inst}。 
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\textwidth]{figures/explict-template-inst.png}
+\caption{显式模板实例化} 
+ \label{fig:explict-template-inst}
+\end{figure}
+
+
 
 \begin{advise}
 子类化优于\ascii{typedef}

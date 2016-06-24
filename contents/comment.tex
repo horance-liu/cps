@@ -1,0 +1,133 @@
+\begin{savequote}[45mm]
+\ascii{On the other hand, we cannot ignore efficiency.}
+\qauthor{\ascii{– Jon Bentley}}
+\end{savequote}
+
+\chapter{注释} 
+\label{ch:comment}
+
+\section{注释}
+\begin{content}
+
+\begin{regulation}
+注释不如花费更多时间给实体取一个好名字，让其名副其实。
+\end{regulation}
+
+反例：
+\begin{leftbar}
+\begin{c++}
+int time; // elapsed time in days
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+int elapsedTimeInDays;
+\end{c++}
+\end{leftbar}
+
+注释应成为一种羞耻的活动，当需要添加注释的时候，往往是改善设计的最好时机。
+
+\begin{regulation}
+注释符号与注释内容之间要用一个空格分割。
+\end{regulation}
+
+当注释内容与注释符号之间没有空格，尤其是中文注释，导致部分编译器词法分析错误，导致编译失败。
+
+反例：
+\begin{leftbar}
+\begin{c++}
+/*multi-line comment*/
+//sigle-line comment
+\end{c++}
+\end{leftbar}
+
+正例：
+\begin{leftbar}
+\begin{c++}
+/* multi-line comment */
+// single-line comment
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+消除所有没有必要的注释
+\end{regulation}
+
+没有携带任何信息量的注释都是没有必要的。如下列的注释，维护它简直就是一种巨大的包袱，有时候它的存在就像一个笑话。
+
+反例：
+\begin{leftbar}
+\begin{c++}
+/**
+ * Constructor
+ */
+InvokedAtMost(const unsigned int times);
+
+/**
+ * @param Invocation
+ * @return bool
+ */
+bool matches(const Invocation& inv) const;
+\end{c++}
+\end{leftbar}
+
+\begin{regulation}
+消除所有误导性、过时的、与设计实现不匹配的注释
+\end{regulation}
+
+如果注释和代码已经失去匹配，意图甚至是相反的。这样的注释如果继续存在，贻害的肯定不止一个人。“假如代码和注释不一致，那么很可能两者都是错误的”，\ascii{Norm Schryer}形象地描述了不一致的注释给代码维护者带来的困扰。
+
+\begin{regulation}
+消除所有日志型、归属、签名的注释
+\end{regulation}
+
+修正一个\ascii{bug}时，都需要在函数头的注释表中记录被次修改的内容。放弃这种“好”习惯吧，请将这些详细的信息提交给源代码控制系统，那里是此类注释最好的归所。
+
+\begin{regulation}
+消除所有\ascii{//end if, //end while, //end for, // end try}的注释
+\end{regulation}
+
+因为逻辑太过于冗长、复杂，又为了增强可读性，往往在花括号后面标记\ascii{//end if, //end while, //end for, // end try}，这往往是简化表达式、提取函数的最佳时机。
+
+\begin{regulation}
+已经被注释掉的代码，应该立即删除
+\end{regulation}
+
+不要珍惜这些冗余的代码，害怕丢掉这些代码而买不到后悔药。你要相信，从源代码控制系统中追回这份被删除的代码易如反掌。
+
+\begin{regulation}
+在需要注释的时候，一定要加注释
+\end{regulation}
+
+因公司版权的保护，需要增加版权法律信息注释\footnote{发布开源代码时，也常常需要增加必要的\ascii{GNU, BSD等}公共许可证}。幸运的是，这类问题可以通过代码模板轻松解决，不会成为造成程序员的任何负担。
+
+在已经尽全力也无法用代码表述清楚时，增加必要的注释会使代码更加容易被别人理解和维护。在这些场景下，注释将成为我们最后一根救命稻草。
+
+\begin{enum}
+  \eitem{代码无法明确的意图也需要增加注释}
+  \eitem{如果在代码中存在特殊的陷阱、实现手法等情况，此时注释变得尤为宝贵}
+\end{enum}
+
+例如，当操作复杂的位运算时，提供比特位的内存映像的注解，将有利于加快读者阅读代码的速度。
+
+正例：
+\begin{leftbar}
+\begin{c++}
+// Fast version of "hash = (65599 * hash) + c"
+hash = (hash << 6) + (hash << 16) - hash + c;
+\end{c++}
+\end{leftbar}
+
+当定义难以理解的正则表达式时，提供更直观的格式说明，同样可以改善对代码的理解。
+
+正例：
+\begin{leftbar}
+\begin{c++}
+// kk::mm::ss, MM dd, yyyy
+std::string timePattern = "\\d{2}:\\d{2}:\\d{2}, \\d{2} \\d{2}, \\d{4}";
+\end{c++}
+\end{leftbar}
+
+\end{content}
